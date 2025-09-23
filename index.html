@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoubbleTech</title>
+    <!-- SEO Meta Tags - IMPORTANT: Replace this with your actual content -->
+    <meta name="description" content="Official website of DoubbleTech.com">
+    <meta name="keywords" content="Official website of DoubbleTech.com">
+
+    <!-- Favicon and Font -->
+    <link rel="icon" type="image/png" href="./assets/logo/tp logo2.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons CDN for menu icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- GSAP and ScrollTrigger from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f8fd;
+        }
+
+        /* Custom styles for the sidebar */
+        #header {
+            width: 80px;
+            /* Fixed width, no hover effect on the entire header */
+            transition: width 0.3s ease-in-out;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 9997;
+            background-color: transparent;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 0;
+            text-align: center;
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #main {
+            margin-left: 80px;
+            /* Fixed margin to prevent shifting */
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .navmenu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .navmenu li {
+            margin-bottom: 20px;
+        }
+
+        /* Target the link directly for hover effect */
+        .navmenu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #45505b;
+            font-size: 15px;
+            text-decoration: none;
+            background-color: #f1f1f1;
+            border-radius: 9999px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 50px;
+            /* Fixed initial width */
+            height: 50px;
+            padding: 0 15px;
+            transition: all 0.3s ease-in-out;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        /* New hover effect on the individual link */
+        .navmenu a:hover {
+            width: 160px;
+            /* Expanded width to show both icon and text */
+            justify-content: flex-start;
+            background-color: #4682B4;
+            color: #fff;
+            border-radius: 0 9999px 9999px 0;
+            /* Updated: Circular on the right, square on the left */
+        }
+
+        .navmenu a span {
+            display: inline-block;
+            opacity: 0;
+            visibility: hidden;
+            width: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, width 0.3s ease-in-out;
+            margin-left: 0;
+        }
+
+        /* Make the span visible and add a margin when hovering on the parent link */
+        .navmenu a:hover span {
+            opacity: 1;
+            visibility: visible;
+            width: auto;
+            margin-left: 10px;
+        }
+
+        .navmenu a.active {
+            background-color: #4682B4;
+            color: #fff;
+            border-radius: 0 9999px 9999px 0;
+            /* Added for consistency */
+        }
+
+        .navmenu a.active i,
+        .navmenu a:hover i {
+            color: #fff;
+        }
+
+        .navmenu a i {
+            font-size: 24px;
+            color: #45505b;
+            transition: color 0.3s;
+        }
+
+        /* Custom styles for the hero section background */
+        #hero {
+            background-image: url('./assets/hero/hero.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            background-attachment: fixed;
+        }
+
+        #hero::before {
+            content: "";
+            background: rgba(5, 13, 24, 0.3);
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        /* Custom styling for sections */
+        .section-title h2::after {
+            content: "";
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: #4682B4;
+            margin: 1.25rem auto 0;
+        }
+
+        /* Custom styling for portfolio item hover effect */
+        .portfolio-item .portfolio-info {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .portfolio-item:hover .portfolio-info {
+            opacity: 1;
+        }
+
+        /* Custom styling for service item icons */
+        .service-item .icon {
+            background-color: #4682B4;
+            width: 90px;
+            height: 90px;
+        }
+
+        .service-item .icon svg path {
+            fill: #f5f5f5;
+        }
+
+        /* Custom styling for contact info items */
+        .contact .info-item i {
+            background: #4682B4;
+            color: #fff;
+        }
+
+        /* Testimonial slider custom styling */
+        .testimonial-item {
+            background: #fff;
+            padding: 2rem;
+            box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.12);
+            border-radius: 1rem;
+        }
+
+        .testimonial-content {
+            color: #555;
+        }
+
+        /* General responsive utility classes */
+        .block-on-lg {
+            @media (min-width: 1024px) {
+                display: block;
+            }
+        }
+
+        #Reviews {
+            background: url('./assets/rev/rev.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        /* --- New Parallax Slider CSS --- */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            background-color: #f5f8fd;
+            color: #333;
+        }
+
+        .parallax-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+            padding: 1rem;
+        }
+
+        @media (min-width: 1024px) {
+            .parallax-wrapper {
+                flex-direction: row;
+                gap: 4rem;
+            }
+        }
+
+        .parallax-window {
+            position: relative;
+            width: 90vw;
+            height: 60vh;
+            max-width: 1200px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(22, 27, 34, 0.1);
+        }
+
+        @media (min-width: 1024px) {
+            .parallax-window {
+                width: 90vw;
+                /* Increased width here */
+                height: 80vh;
+                max-width: 1400px;
+            }
+        }
+
+        .image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Set initial positions for each image */
+        #img-1 {
+            z-index: 5;
+        }
+
+        #img-2 {
+            transform: translateX(100%);
+            z-index: 4;
+        }
+
+        #img-3 {
+            transform: translateY(-100%);
+            z-index: 3;
+        }
+
+        #img-4 {
+            transform: translateY(100%);
+            z-index: 2;
+        }
+
+        #img-5 {
+            transform: translateX(100%);
+            clip-path: inset(100% 0 0 0);
+            z-index: 1;
+        }
+
+        .description-container {
+            width: 90vw;
+            max-width: 450px;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(22, 27, 34, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            color: #333;
+        }
+
+        .description-container h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .description-container p {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #4b5563;
+        }
+
+        /* Spacer to enable scroll */
+        .spacer {
+            height: 100vh;
+        }
+
+        /* Custom CSS for the new Stats section design */
+        #stats {
+            background: #f5f8fd;
+        }
+
+        /* Keyframes for the float-and-bounce animation */
+        @keyframes float-bounce {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .stats-item-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            animation: float-bounce 6s ease-in-out infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 280px;
+            /* Fixed size for the circle */
+            height: 280px;
+            /* Fixed size for the circle */
+            border-radius: 9999px;
+            /* Makes it a circle */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #ffffff, #f0f4f8);
+        }
+
+        .stats-item-card:hover {
+            transform: scale(1.05) translateY(-5px);
+            animation-play-state: paused;
+            background: #4682B4;
+            /* The steel blue color */
+        }
+
+        .stats-item-card:hover .icon,
+        .stats-item-card:hover .count,
+        .stats-item-card:hover p {
+            color: #ffffff;
+            /* The white color */
+        }
+
+        .stats-item-card .icon {
+            font-size: 3rem;
+            color: #1a428a;
+            transition: color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f8fd;
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card-shadow:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+
+<body class="bg-[#f5f8fd] text-gray-700">
+
+    <!-- ======= Header ======= -->
+    <header id="header" class="flex flex-col justify-start text-center">
+
+        <nav id="navmenu" class="navmenu">
+            <ul class="list-none p-0 m-0">
+                <li><a href="#hero" class="nav-link transition-colors group active"><i class="bi bi-house navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Home</span></a></li>
+                <li><a href="#about" class="nav-link transition-colors group"><i class="bi bi-person navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>About</span></a></li>
+                <li><a href="#stats" class="nav-link transition-colors group"><i class="bi bi-graph-up navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Stats</span></a></li>
+                <li><a href="#expertise" class="nav-link transition-colors group"><i class="bi bi-lightbulb navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Expertise</span></a></li>
+                <!--        <li><a href="#portfolio" class="nav-link transition-colors group"><i class="bi bi-images navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Portfolio</span></a></li> -->
+                <li><a href="#services" class="nav-link transition-colors group"><i class="bi bi-hdd-stack navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Services</span></a></li>
+                <li><a href="#Reviews" class="nav-link transition-colors group"><i class="bi bi-chat-dots navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Reviews</span></a></li>
+                <li><a href="#contact" class="nav-link transition-colors group"><i class="bi bi-envelope navicon text-2xl text-gray-700 transition-colors group-[.active]:text-white group-hover:text-white"></i><span>Contact</span></a></li>
+            </ul>
+        </nav>
+    </header><!-- End Header -->
+
+    <!-- ======= Hero Section ======= -->
+    <section id="hero" class="relative w-full h-screen flex flex-col justify-center items-center text-center text-white p-4">
+        <div class="relative z-10">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold">DoubbleTech</h1>
+            <p class="text-lg sm:text-xl md:text-2xl mt-4">We are the<span id="typed-text" class="border-b-4 border-[#4682B4] pb-1"></span></p>
+            <div class="social-links mt-3 flex justify-center space-x-1">
+                <a href="https://www.linkedin.com/company/doubbletech/" class="inline-flex items-center justify-center bg-transparent text-white w-9 h-9 rounded-full transition-colors hover:bg-white hover:text-[#4682B4] border border-white"><i class="bi bi-linkedin text-lg"></i></a>
+            </div>
+        </div>
+    </section><!-- End Hero Section -->
+
+    <main id="main" class="lg:ml-[80px]">
+
+        <!-- About Section -->
+        <section id="about" class="py-16 px-4">
+            <!-- Section Title -->
+            <div class="text-center pb-8">
+                <h2 class="text-3xl font-bold uppercase pb-4 relative">About</h2>
+
+            </div><!-- End Section Title -->
+            <div class="container mx-auto">
+                <div class="flex flex-wrap lg:flex-nowrap items-center gap-8">
+                    <div class="w-full lg:w-1/3">
+                        <img src="./assets/other/about.png" alt="DoubbleTech" class="w-auto h-auto rounded-xl shadow-lg">
+                    </div>
+
+                    <div class="w-full lg:w-2/3 bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+
+                        <p class="py-3">Our story at DoubbleTech is one of growth. We started out helping businesses with their finances, handling bookkeeping and accounting with precision. We soon realized that for a business to truly grow, its financial health needs to be supported by great technology and a compelling brand.</p>
+                        <p class="py-3">
+                            That's why we've brought together a team of seasoned IT professionals. Today, we're a full-service partner for businesses ready to scale. We provide end-to-end solutions, from building robust ERP systems and websites to creating custom mobile apps on modern stacks like MERN, Angular, Ruby, and Python.</p>
+
+                        <p class="py-3"> We also ensure your digital presence is visually stunning and intuitive with expert UI/UX and Graphic Design. To round it all out, we offer Content Creation and dedicated Customer Support to help you build your brand and keep your customers happy. </p>
+                        <p class="py-3">DoubbleTech, we believe in providing a complete solution. We're here to help you get the numbers right, build the right tools, and create a brand that connects. Our mission is to help your business not just grow, but to truly DoubbleTech.</p>
+
+                    </div>
+                </div>
+            </div>
+        </section><!-- /About Section -->
+
+        <!-- Stats Section - UPDATED WITH NEW DESIGN -->
+        <section id="stats" class="py-16 px-4 bg-[#f5f8fd]">
+            <div class="container mx-auto">
+                <div class="text-center pb-8">
+                    <h2 class="text-3xl font-bold uppercase pb-4 relative">Statistics</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center">
+                    <!-- Happy Clients Stat -->
+                    <div class="stats-item-card">
+                        <i class="bi bi-emoji-smile icon mb-4"></i>
+                        <div class="relative z-10 text-center">
+                            <span class="count text-6xl font-extrabold text-[#4682B4]" data-target="18">0</span>
+                            <p class="text-md font-medium text-gray-600 mt-2">Happy Clients</p>
+                        </div>
+                    </div>
+                    <!-- Projects Stat -->
+                    <div class="stats-item-card">
+                        <i class="bi bi-journal-richtext icon mb-4"></i>
+                        <div class="relative z-10 text-center">
+                            <span class="count text-6xl font-extrabold text-[#4682B4]" data-target="26">0</span>
+                            <p class="text-md font-medium text-gray-600 mt-2">Projects</p>
+                        </div>
+                    </div>
+                    <!-- Hours of Support Stat -->
+                    <div class="stats-item-card">
+                        <i class="bi bi-headset icon mb-4"></i>
+                        <div class="relative z-10 text-center">
+                            <span class="count text-6xl font-extrabold text-[#4682B4]" data-target="1053">0</span>
+                            <p class="text-md font-medium text-gray-600 mt-2">Hours Of Support</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /Stats Section -->
+
+        <!-- Experties Section -->
+        <section id="expertise" class="py-20 px-4 w-full">
+            <div class="container mx-auto">
+                <h2 class="text-4xl lg:text-5xl font-extrabold text-[#173b6c] text-center mb-4">Our Core Competencies</h2>
+                <p class="text-center text-lg text-gray-500 max-w-2xl mx-auto mb-16">We combine strategy, design, and technology to deliver solutions that drive growth and empower businesses.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Competency 1: Full-Stack Development -->
+                    <div class="card-shadow bg-white p-8 rounded-2xl text-center">
+                        <i class="bi bi-code-slash text-5xl text-[#4682B4] mb-4"></i>
+                        <h3 class="text-xl font-bold text-[#173b6c] mb-2">Full-Stack Development</h3>
+                        <p class="text-gray-600">From front-end user interfaces to back-end architecture and databases, we build robust, end-to-end web applications.</p>
+                    </div>
+
+                    <!-- Competency 2: UI/UX Design -->
+                    <div class="card-shadow bg-white p-8 rounded-2xl text-center">
+                        <i class="bi bi-bezier text-5xl text-[#4682B4] mb-4"></i>
+                        <h3 class="text-xl font-bold text-[#173b6c] mb-2">UI/UX Design</h3>
+                        <p class="text-gray-600">We design user experiences that are both visually stunning and highly effective, engaging your audience while driving business growth.</p>
+                    </div>
+
+                    <!-- Competency 3: Cloud & DevOps -->
+                    <div class="card-shadow bg-white p-8 rounded-2xl text-center">
+                        <i class="bi bi-cloud-arrow-up text-5xl text-[#4682B4] mb-4"></i>
+                        <h3 class="text-xl font-bold text-[#173b6c] mb-2">Cloud & DevOps</h3>
+                        <p class="text-gray-600">Leverage the power of the cloud with our expertise in scalable infrastructure, continuous integration, and automated deployments.</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Combined Parallax Section -->
+            <div class="section" id="parallax-section">
+                <div class="parallax-wrapper">
+                    <div class="parallax-window">
+                        <!-- Image 1 is visible by default -->
+                        <div id="img-1" class="image-container" style="background-image: url('./assets/sl/GUI.png');"></div>
+                        <!-- Images 2, 3, 4, 5 are initially off-screen or hidden -->
+                        <div id="img-2" class="image-container" style="background-image: url('./assets/sl/apdevv.png');"></div>
+                        <div id="img-3" class="image-container" style="background-image: url('./assets/sl/sldm.png');"></div>
+                        <div id="img-4" class="image-container" style="background-image: url('./assets/sl/slaf.png');"></div>
+                        <div id="img-5" class="image-container" style="background-image: url('./assets/sl/csupp.png');"></div>
+                    </div>
+                    <div id="description-container" class="description-container">
+                        <h2 id="product-title">UI/UX Designing</h2>
+                        <p id="product-description">The art and science of designing digital products that are not only visually appealing also effortless and enjoyable to use. We love to help you with that—delivering the services and creating the tools that help you achieve your life goals and targets.</p>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /Experties Section -->
+
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="py-16 px-4 bg-[#f5f8fd] hidden">
+            <!-- Section Title -->
+            <div class="text-center pb-8">
+                <h2 class="text-3xl font-bold uppercase pb-4 relative">Portfolio</h2>
+                <p class="mt-4 max-w-2xl mx-auto">Here is a selection of our recent work.</p>
+            </div><!-- End Section Title -->
+            <div class="container mx-auto">
+                <ul id="portfolio-filters" class="flex justify-center flex-wrap gap-2 mb-8">
+                    <li data-filter="*" class="filter-active cursor-pointer px-4 py-2 rounded-2xl bg-white text-gray-700 font-semibold transition-colors hover:bg-[#4682B4] hover:text-white">All</li>
+                    <li data-filter="appdev" class="cursor-pointer px-4 py-2 rounded-2xl bg-white text-gray-700 font-semibold transition-colors hover:bg-[#4682B4] hover:text-white">Application Development</li>
+                    <li data-filter="webdev" class="cursor-pointer px-4 py-2 rounded-2xl bg-white text-gray-700 font-semibold transition-colors hover:bg-[#4682B4] hover:text-white">Web Development</li>
+                    <li data-filter="digital" class="cursor-pointer px-4 py-2 rounded-2xl bg-white text-gray-700 font-semibold transition-colors hover:bg-[#4682B4] hover:text-white">Digital Marketing</li>
+                    <li data-filter="accounting" class="cursor-pointer px-4 py-2 rounded-2xl bg-white text-gray-700 font-semibold transition-colors hover:bg-[#4682B4] hover:text-white">Accounting & Finance</li>
+                    <li data-filter="support" class="cursor-pointer px-4 py-2 rounded-2xl bg-white text-gray-700 font-semibold transition-colors hover:bg-[#4682B4] hover:text-white">Customer Support ERP</li>
+                </ul>
+                <div id="portfolio-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="appdev">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=App+Dev+1" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="App Dev project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">App 1</h4>
+                            <p class="text-sm">An innovative mobile application for tracking habits.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=App+Dev+1+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="webdev">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=Web+Dev+1" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="Web Dev project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">Web Dev 1</h4>
+                            <p class="text-sm">A modern, responsive e-commerce website.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=Web+Dev+1+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="digital">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=Digital+Marketing+1" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="Digital marketing project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">Digital Marketing 1</h4>
+                            <p class="text-sm">A comprehensive campaign for a local business.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=Digital+Marketing+1+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="appdev">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=App+Dev+2" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="App Dev project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">App 2</h4>
+                            <p class="text-sm">A fitness tracker mobile app.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=App+Dev+2+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="webdev">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=Web+Dev+2" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="Web Dev project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">Web Dev 2</h4>
+                            <p class="text-sm">A personal blog platform with a clean design.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=Web+Dev+2+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="digital">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=Digital+Marketing+2" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="Digital marketing project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">Digital Marketing 2</h4>
+                            <p class="text-sm">A social media strategy for a new startup.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=Digital+Marketing+2+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="accounting">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=Accounting+1" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="Accounting project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">Accounting & Finance 1</h4>
+                            <p class="text-sm">A financial tracking dashboard.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=Accounting+1+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="support">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=Support+ERP+1" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="Support ERP project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">Customer Support ERP 1</h4>
+                            <p class="text-sm">A custom enterprise resource planning tool.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=Support+ERP+1+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-item relative overflow-hidden rounded-2xl shadow-lg group" data-category="appdev">
+                        <img src="https://placehold.co/600x400/EFEFEF/DoubbleTech?text=App+Dev+3" class="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-110" alt="App Dev project image">
+                        <div class="portfolio-info absolute inset-0 bg-blue-500 bg-opacity-8- flex flex-col items-center justify-center text-white p-4 text-center rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                            <h4 class="text-xl font-bold mb-1">App 3</h4>
+                            <p class="text-sm">A recipe discovery mobile app.</p>
+                            <div class="mt-2 space-x-2">
+                                <button class="preview-link text-white text-2xl" data-src="https://placehold.co/800x600/EFEFEF/DoubbleTech?text=App+Dev+3+Detail"><i class="bi bi-zoom-in"></i></button>
+                                <a href="#" class="details-link text-white text-2xl"><i class="bi bi-link-45deg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /Portfolio Section -->
+
+        <!-- Services Section -->
+        <section id="services" class="py-16 px-4">
+            <!-- Section Title -->
+            <div class="text-center pb-8">
+                <h2 class="text-3xl font-bold uppercase pb-4 relative">Services</h2>
+                <p class="mt-4 max-w-2xl mx-auto">we offer a great range of services designed to help you bring your ideas to life and achieve your life goals.</p>
+            </div><!-- End Section Title -->
+            <div class="container mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="service-item bg-white text-center p-10 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+                        <div class="icon inline-flex justify-center items-center rounded-full w-[90px] h-[90px] mb-4 relative text-white text-4xl bg-[#4682B4]">
+                            <img src="./assets/services/app dev.gif" alt="App Development" class="w-full h-full object-cover">
+                        </div>
+                        <a href="#" class="stretched-link text-xl font-bold text-gray-800">
+                            <h3>Web Design & Development</h3>
+                        </a>
+                        <p class="text-sm mt-2 text-gray-600">Creating stunning, responsive, and user-friendly websites from scratch using the latest web technologies.</p>
+                    </div>
+                    <div class="service-item bg-white text-center p-10 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+                        <div class="icon inline-flex justify-center items-center rounded-full w-[90px] h-[90px] mb-4 relative text-white text-4xl bg-[#4682B4]">
+                            <img src="./assets/services/appdev 2.gif" alt="App Development" class="w-full h-full object-cover">
+                        </div>
+                        <a href="#" class="stretched-link text-xl font-bold text-gray-800">
+                            <h3>App Development</h3>
+                        </a>
+                        <p class="text-sm mt-2 text-gray-600">Designing and building robust, scalable mobile applications for iOS and Android platforms that are ready for the app store.</p>
+                    </div>
+                    <div class="service-item bg-white text-center p-10 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+                        <div class="icon inline-flex justify-center items-center rounded-full w-[90px] h-[90px] mb-4 relative text-white text-4xl bg-[#4682B4]">
+                            <img src="./assets/services/ui.gif" alt="App Development" class="w-full h-full object-cover">
+                        </div>
+                        <a href="#" class="stretched-link text-xl font-bold text-gray-800">
+                            <h3>UX/UI Design</h3>
+                        </a>
+                        <p class="text-sm mt-2 text-gray-600">Crafting intuitive and engaging user experiences, from wireframing and prototyping to final polished interfaces.</p>
+                    </div>
+                    <div class="service-item bg-white text-center p-10 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+                        <div class="icon inline-flex justify-center items-center rounded-full w-[90px] h-[90px] mb-4 relative text-white text-4xl bg-[#4682B4]">
+                            <img src="./assets/services/dm.gif" alt="App Development" class="w-full h-full object-cover">
+                        </div>
+                        <a href="#" class="stretched-link text-xl font-bold text-gray-800">
+                            <h3>Digital Marketing</h3>
+                        </a>
+                        <p class="text-sm mt-2 text-gray-600">Developing data-driven strategies for search engine optimization (SEO), social media campaigns, and online advertising to grow your brand's presence.</p>
+                    </div>
+                    <div class="service-item bg-white text-center p-10 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+                        <div class="icon inline-flex justify-center items-center rounded-full w-[90px] h-[90px] mb-4 relative text-white text-4xl bg-[#4682B4]">
+                            <img src="./assets/services/mkt.gif" alt="App Development" class="w-full h-full object-cover">
+                        </div>
+                        <a href="#" class="stretched-link text-xl font-bold text-gray-800">
+                            <h3>Content Creation</h3>
+                        </a>
+                        <p class="text-sm mt-2 text-gray-600">Producing high-quality content, including compelling articles, detailed case studies, and engaging multimedia to support your brand's narrative.</p>
+                    </div>
+                    <div class="service-item bg-white text-center p-10 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+                        <div class="icon inline-flex justify-center items-center rounded-full w-[90px] h-[90px] mb-4 relative text-white text-4xl bg-[#4682B4]">
+                            <img src="./assets/services/cs.gif" alt="App Development" class="w-full h-full object-cover">
+                        </div>
+                        <a href="#" class="stretched-link text-xl font-bold text-gray-800">
+                            <h3>E-commerce Solutions</h3>
+                        </a>
+                        <p class="text-sm mt-2 text-gray-600">Building secure and scalable online stores that provide a seamless shopping experience for your customers and powerful management tools for your team.</p>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /Services Section -->
+
+        <!-- Testimonials Section -->
+        <section id="Reviews" class="py-16 px-4 bg-[#f5f8fd] text-white">
+            <!-- Section Title -->
+            <div class="text-center pb-8">
+                <h2 class="text-3xl font-bold uppercase pb-4 relative">Reviews</h2>
+                <p class="mt-4 max-w-2xl mx-auto">See what my clients and colleagues have to say about my work and professional approach.</p>
+            </div><!-- End Section Title -->
+            <div class="container mx-auto">
+                <div id="testimonial-slider" class="relative overflow-hidden w-full"align="center">
+                    <div id="testimonials-wrapper" class="flex transition-transform duration-500 ease-in-out">
+                        <div class="testimonial-item flex-shrink-0 w-full">
+                            <div class="flex flex-wrap items-center justify-center lg:flex-nowrap">
+                                <div class="w-full lg:w-2/3">
+                                    <div class="testimonial-content text-gray-700">
+                                        <p class="italic text-lg">
+                                            The team at Doubble Tech brought our vision to life with an incredible eye for detail. The user interface they designed is intuitive and visually stunning, and the entire experience is seamless. They're true experts in user experience, and it shows in every part of their work.
+                                        </p>
+                                        <h3 class="font-bold text-lg text-gray-800 mt-4">Saul Goodman</h3>
+                                        <h4 class="text-sm text-gray-500">Ceo &amp; Founder</h4>
+                                        <div class="stars mt-2 text-[#4682B4]">
+                                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                              
+                            </div>
+                        </div>
+                        <div class="testimonial-item flex-shrink-0 w-full" align="center">
+                            <div class="flex flex-wrap items-center justify-center lg:flex-nowrap">
+                                <div class="w-full lg:w-2/3">
+                                    <div class="testimonial-content text-gray-700">
+                                        <p class="italic text-lg">
+                                            We needed a website for our business, and DoubbleTech delivered a stunning, high-performance site. The team's skills are top-notch, and the project was completed ahead of schedule.
+                                        </p>
+                                        <h3 class="font-bold text-lg text-gray-800 mt-4">Sara Wilsson</h3>
+                                        <h4 class="text-sm text-gray-500">Designer</h4>
+                                        <div class="stars mt-2 text-[#4682B4]">
+                                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                              
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center mt-4">
+                        <div id="testimonial-bullets" class="flex space-x-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /Testimonials Section -->
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-16 px-4">
+            <!-- Section Title -->
+            <div class="text-center pb-8">
+                <h2 class="text-3xl font-bold uppercase pb-4 relative">Get in touch</h2>
+                <p class="mt-4 max-w-2xl mx-auto">Get in touch to discuss your project. we are available for you 24/7.</p>
+            </div><!-- End Section Title -->
+            <div class="container mx-auto">
+                <div class="flex flex-wrap lg:flex-nowrap gap-6">
+                    <div class="w-full lg:w-1/3 space-y-4">
+                        <div class="info-item bg-white p-6 rounded-2xl shadow-lg flex items-start">
+                            <i class="bi bi-geo-alt flex-shrink-0 bg-[#4682B4] text-white w-11 h-11 flex justify-center items-center rounded-full text-xl mr-4"></i>
+                            <div>
+                                <h3 class="font-bold text-lg">Address</h3>
+                                <p class="text-sm text-gray-600">60675 Karachi, Pakistan </p>
+                            </div>
+                        </div>
+                        <div class="info-item bg-white p-6 rounded-2xl shadow-lg flex items-start">
+                            <i class="bi bi-telephone flex-shrink-0 bg-[#4682B4] text-white w-11 h-11 flex justify-center items-center rounded-full text-xl mr-4"></i>
+                            <div>
+                                <h3 class="font-bold text-lg">Call Us</h3>
+                                <p class="text-sm text-gray-600">+92 312 280 6668</p>
+                            </div>
+                        </div>
+                        <div class="info-item bg-white p-6 rounded-2xl shadow-lg flex items-start">
+                            <i class="bi bi-envelope flex-shrink-0 bg-[#4682B4] text-white w-11 h-11 flex justify-center items-center rounded-full text-xl mr-4"></i>
+                            <div>
+                                <h3 class="font-bold text-bold">Email Us</h3>
+                                <p class="text-sm text-gray-600">info@DoubbleTech.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-2/3">
+                        <form id="contactForm" class="bg-white p-6 rounded-2xl shadow-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input type="text" name="name" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4682B4]" placeholder="Your Name" required>
+                                <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4682B4]" placeholder="Your Email" required>
+                            </div>
+                            <div class="mb-4">
+                                <input type="text" name="subject" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4682B4]" placeholder="Subject" required>
+                            </div>
+                            <div class="mb-4">
+                                <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4682B4]" name="message" rows="6" placeholder="Message" required></textarea>
+                            </div>
+                            <div id="status-message" class="hidden my-3 p-3 rounded-lg text-center font-bold"></div>
+                            <div class="text-center">
+                                <button type="submit" class="bg-[#4682B4] text-white font-semibold py-3 px-8 rounded-full transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-[#4682B4]">Send Message</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /Contact Section -->
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer" class="bg-[#ffffff] py-8 text-center">
+        <div class="container mx-auto">
+            <h3 class="text-3xl font-bold text-gray-800">DoubbleTech</h3>
+            <p class="mt-2 text-gray-600 max-w-xl mx-auto">Providing innovative design and development services to help you create powerful digital experiences.</p>
+            <div class="social-links flex justify-center space-x-2 mt-4">
+                <a href="https://www.linkedin.com/company/doubbletech/" class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-400 text-white transition-colors hover:bg-[#4682B4]"><i class="bi bi-linkedin"></i></a>
+            </div>
+            <div class="mt-6 text-sm text-gray-500">
+                <span>Copyright</span> <strong class="px-1">DoubbleTech</strong> <span>All Rights Reserved</span>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Scroll Top -->
+    <button id="scroll-top" class="fixed bottom-6 right-6 z-[9999] bg-[#4682B4] text-white p-3 rounded-full shadow-lg transition-opacity duration-300 opacity-0 hidden">
+        <i class="bi bi-arrow-up-short text-2xl"></i>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.getElementById('header');
+            const main = document.getElementById('main');
+
+            // Removed JS related to header/main width changes
+
+            // Typed effect
+            const typedText = document.getElementById('typed-text');
+            const phrases = [" Designers", " Service Providers", " Freelancers", " Application Developers", " Marketing Specialists", " Books Keeper", " Finance Business Partners"];
+            let phraseIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+
+            function type() {
+                const currentPhrase = phrases[phraseIndex];
+                const displayText = isDeleting ?
+                    currentPhrase.substring(0, charIndex--) :
+                    currentPhrase.substring(0, charIndex++);
+
+                typedText.textContent = displayText;
+
+                if (!isDeleting && charIndex === currentPhrase.length + 1) {
+                    setTimeout(() => isDeleting = true, 2000);
+                } else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    phraseIndex = (phraseIndex + 1) % phrases.length;
+                }
+
+                const typingSpeed = isDeleting ? 50 : 100;
+                setTimeout(type, typingSpeed);
+            }
+            type();
+
+            // Scrollspy
+            const navLinks = document.querySelectorAll('.nav-link');
+            // Updated the selector to include the `div` with class "section"
+            const sections = document.querySelectorAll('section, .section');
+            const scrollOffset = 150; // Adjust this value to fine-tune when the link becomes active
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.offsetHeight;
+                    // Determine if the user's scroll position is within the current section's bounds
+                    if (window.scrollY >= sectionTop - scrollOffset && window.scrollY < sectionTop + sectionHeight - scrollOffset) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.href.includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Scroll to top button
+            const scrollTopBtn = document.getElementById('scroll-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollTopBtn.classList.remove('hidden');
+                    setTimeout(() => scrollTopBtn.style.opacity = '1', 50);
+                } else {
+                    scrollTopBtn.style.opacity = '0';
+                    setTimeout(() => scrollTopBtn.classList.add('hidden'), 300);
+                }
+            });
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // Stats counter animation
+            const statCounters = document.querySelectorAll('.stats-item-card .count');
+            const statsSection = document.getElementById('stats');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        statCounters.forEach(counter => {
+                            const target = +counter.getAttribute('data-target');
+                            const speed = 200; // The higher the number, the slower the animation
+                            const increment = target / speed;
+                            const updateCount = () => {
+                                const current = +counter.textContent;
+                                if (current < target) {
+                                    counter.textContent = Math.ceil(current + increment);
+                                    setTimeout(updateCount, 1);
+                                } else {
+                                    counter.textContent = target;
+                                }
+                            };
+                            updateCount();
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.5
+            });
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+
+            // Portfolio filtering
+            const filterContainer = document.getElementById('portfolio-filters');
+            const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+            filterContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'LI') {
+                    document.querySelector('.filter-active').classList.remove('filter-active');
+                    e.target.classList.add('filter-active');
+                    const filterValue = e.target.getAttribute('data-filter');
+                    portfolioItems.forEach(item => {
+                        if (filterValue === '*' || item.getAttribute('data-category') === filterValue) {
+                            item.classList.remove('hidden');
+                            setTimeout(() => item.style.display = 'block', 10);
+                        } else {
+                            item.classList.add('hidden');
+                            setTimeout(() => item.style.display = 'none', 10);
+                        }
+                    });
+                }
+            });
+
+            // Testimonial Slider
+            const testimonialsWrapper = document.getElementById('testimonials-wrapper');
+            const testimonials = document.querySelectorAll('.testimonial-item');
+            const bulletsContainer = document.getElementById('testimonial-bullets');
+            let currentSlide = 0;
+
+            testimonials.forEach((_, index) => {
+                const bullet = document.createElement('div');
+                bullet.classList.add('w-2', 'h-2', 'rounded-full', 'bg-gray-400', 'cursor-pointer', 'transition-colors', 'hover:bg-[#4682B4]');
+                bullet.setAttribute('data-index', index);
+                bulletsContainer.appendChild(bullet);
+            });
+            const bullets = document.querySelectorAll('#testimonial-bullets div');
+            bullets[0].classList.add('!bg-[#4682B4]');
+
+            function updateSlider() {
+                testimonialsWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+                bullets.forEach(b => b.classList.remove('!bg-[#4682B4]'));
+                bullets[currentSlide].classList.add('!bg-[#4682B4]');
+            }
+
+            bullets.forEach(bullet => {
+                bullet.addEventListener('click', (e) => {
+                    currentSlide = parseInt(e.target.getAttribute('data-index'));
+                    updateSlider();
+                });
+            });
+
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % testimonials.length;
+                updateSlider();
+            }, 5000);
+
+            // Contact Form
+            const contactForm = document.getElementById('contactForm');
+            const statusMessage = document.getElementById('status-message');
+
+            contactForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                statusMessage.textContent = 'Sending...';
+                statusMessage.classList.remove('hidden', 'bg-red-200', 'text-red-700', 'bg-green-200', 'text-green-700');
+                statusMessage.classList.add('bg-blue-200', 'text-blue-700', 'block');
+
+                try {
+                    // Using FormData to easily get all form data
+                    const formData = new FormData(contactForm);
+                    const response = await fetch('contact.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.text();
+                    
+                    if (response.ok) {
+                        statusMessage.textContent = result; // Display the success message from PHP
+                        statusMessage.classList.remove('bg-blue-200', 'text-blue-700');
+                        statusMessage.classList.add('bg-green-200', 'text-green-700');
+                        contactForm.reset();
+
+                        // Hide the message after 5 seconds
+                        setTimeout(() => {
+                            statusMessage.classList.add('hidden');
+                        }, 5000);
+                    } else {
+                        statusMessage.textContent = 'An error occurred. Please try again later.';
+                        statusMessage.classList.remove('bg-blue-200', 'text-blue-700');
+                        statusMessage.classList.add('bg-red-200', 'text-red-700');
+                    }
+                } catch (error) {
+                    statusMessage.textContent = 'Network error. Please check your connection and try again.';
+                    statusMessage.classList.remove('bg-blue-200', 'text-blue-700');
+                    statusMessage.classList.add('bg-red-200', 'text-red-700');
+                }
+            });
+        });
+
+        // New slider script
+        gsap.registerPlugin(ScrollTrigger);
+
+        const img1 = document.getElementById('img-1');
+        const img2 = document.getElementById('img-2');
+        const img3 = document.getElementById('img-3');
+        const img4 = document.getElementById('img-4');
+        const img5 = document.getElementById('img-5');
+        const productTitle = document.getElementById('product-title');
+        const productDescription = document.getElementById('product-description');
+        const descriptionContainer = document.getElementById('description-container');
+
+        const products = [{
+            title: "UI/UX Designing",
+            description: "We create intuitive and aesthetically pleasing user experiences that engage your audience and drive conversions."
+        }, {
+            title: "App and Web Development",
+            description: "We create apps that help you achieve your goals and targets. We're passionate about delivering the services that make your life easier and more successful."
+        }, {
+            title: "Digital Marketing",
+            description: "We connect you with your audience and drive growth through data-driven digital marketing strategies."
+        }, {
+            title: "Accounting and Finance",
+            description: "We manage your accounting and finances to help you achieve your goals and targets. We're passionate about delivering the services that make your life easier and more successful."
+        }, {
+            title: "Customer Support",
+            description: "We deliver top-notch customer support to help you achieve your goals and targets. We're passionate about providing the services that make your life easier and more successful."
+        }];
+
+        let currentProductIndex = 0;
+
+        function updateDescription(index) {
+            if (index === currentProductIndex) return;
+
+            gsap.to(descriptionContainer, {
+                opacity: 0,
+                y: '-20px',
+                duration: 0.2,
+                onComplete: () => {
+                    productTitle.textContent = products[index].title;
+                    productDescription.textContent = products[index].description;
+                    gsap.to(descriptionContainer, {
+                        opacity: 1,
+                        y: '0px',
+                        duration: 0.2
+                    });
+                    currentProductIndex = index;
+                }
+            });
+        }
+
+        const masterTimeline = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#parallax-section",
+                start: "top top",
+                end: "bottom top",
+                scrub: true,
+                pin: true,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+
+                    if (progress >= 0 && progress < 0.25) {
+                        updateDescription(0);
+                    } else if (progress >= 0.25 && progress < 0.5) {
+                        updateDescription(1);
+                    } else if (progress >= 0.5 && progress < 0.75) {
+                        updateDescription(2);
+                    } else if (progress >= 0.75 && progress < 1.0) {
+                        updateDescription(3);
+                    } else if (progress === 1) {
+                        updateDescription(4);
+                    }
+                }
+            }
+        });
+
+        masterTimeline
+            .addLabel("phase1")
+            .to(img1, {
+                x: "-100%"
+            }, "phase1")
+            .to(img2, {
+                x: "0%"
+            }, "phase1")
+
+            .addLabel("phase2")
+            .to(img2, {
+                y: "-100%"
+            }, "phase2")
+            .to(img3, {
+                y: "0%"
+            }, "phase2")
+
+            .addLabel("phase3")
+            .to(img3, {
+                y: "-100%"
+            }, "phase3")
+            .to(img4, {
+                y: "0%"
+            }, "phase3")
+
+            .addLabel("phase4")
+            .to(img4, {
+                y: "-100%"
+            }, "phase4")
+            .to(img5, {
+                x: "0%",
+                clipPath: "inset(0% 0 0 0)"
+            }, "phase4");
+    </script>
+</body>
+
+</html>
