@@ -84,14 +84,13 @@
                         <thead class="bg-slate-800/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
                             <tr>
                                 <th class="p-6">User Contact</th>
-                                <th class="p-6">Machine ID</th>
-                                <th class="p-6">Date Registered</th>
+                                <th class="p-6">Machine ID / Resets</th>
+                                <th class="p-6">Subscription Info</th>
                                 <th class="p-6">Status</th>
                                 <th class="p-6 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-800">
-                            </tbody>
+                        <tbody id="tableBody" class="divide-y divide-slate-800"></tbody>
                     </table>
                 </div>
                 <div id="no-data" class="p-20 text-center text-slate-500">
@@ -131,36 +130,20 @@
             }
         };
 
-        window.manualRefresh = async function() {
-            const btn = document.getElementById('refreshBtn');
+        window.manualRefresh = function() {
             const icon = document.getElementById('refreshIcon');
-            btn.classList.add('opacity-50');
             icon.classList.add('spin');
             startLiveSync();
-            setTimeout(() => {
-                btn.classList.remove('opacity-50');
-                icon.classList.remove('spin');
-            }, 800);
+            setTimeout(() => icon.classList.remove('spin'), 1000);
         };
 
-        // Filter Function for Search
         window.filterTable = function() {
-            const input = document.getElementById("searchInput");
-            const filter = input.value.toLowerCase();
-            const table = document.getElementById("userTable");
-            const tr = table.getElementsByTagName("tr");
-
-            for (let i = 1; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[0]; // Search within 'User Contact' column
-                if (td) {
-                    const textValue = td.textContent || td.innerText;
-                    if (textValue.toLowerCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
-            }
+            const filter = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#tableBody tr");
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(filter) ? "" : "none";
+            });
         };
 
         function startLiveSync() {
@@ -171,8 +154,7 @@
                 const tbody = document.getElementById('tableBody');
                 const noData = document.getElementById('no-data');
                 tbody.innerHTML = '';
-                let activeCount = 0;
-                let pendingCount = 0;
+                let activeCount = 0, pendingCount = 0;
 
                 if (snapshot.empty) {
                     noData.classList.remove('view-hidden');
@@ -181,11 +163,17 @@
                     snapshot.forEach((snap) => {
                         const user = snap.data();
                         const id = snap.id;
+                        const now = Date.now();
                         
-                        if (user.status === 'Activated' || user.status === 'Active') activeCount++;
+                        // Logic for Active status (Activated + not expired)
+                        const isExpired = user.expiryDate && now > user.expiryDate;
+                        const isActive = (user.status === 'Activated' || user.status === 'Active') && !isExpired;
+
+                        if (isActive) activeCount++;
                         else pendingCount++;
 
-                        const dateStr = user.timestamp ? new Date(user.timestamp).toLocaleDateString() : 'N/A';
+                        const expiryStr = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString() : 'Not Set';
+                        const resetCount = user.resetCount || 0;
 
                         const row = `
                             <tr class="hover:bg-slate-800/30 transition-colors">
@@ -194,24 +182,21 @@
                                     <div class="text-xs text-slate-400">${user.email || 'No Email'}</div>
                                 </td>
                                 <td class="p-6">
-                                    <div class="text-[10px] text-slate-300 font-mono bg-slate-800 px-2 py-1 rounded inline-block">
-                                        ${user.machineId || 'NOT_FOUND'}
-                                    </div>
-                                </td>
-                                <td class="p-6 text-xs text-slate-400">
-                                    ${dateStr}
+                                    <div class="text-[10px] text-slate-300 font-mono bg-slate-800 px-2 py-1 rounded inline-block">ID: ${user.machineId || 'N/A'}</div>
+                                    <div class="text-[9px] text-slate-500 mt-1">DEVICE RESETS: ${resetCount}/2</div>
                                 </td>
                                 <td class="p-6">
-                                    <span class="status-pill ${user.status === 'Activated' || user.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
-                                        ${user.status}
+                                    <div class="text-xs ${isExpired ? 'text-rose-400 font-bold' : 'text-slate-400'}">Expires: ${expiryStr}</div>
+                                </td>
+                                <td class="p-6">
+                                    <span class="status-pill ${isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">
+                                        ${isExpired ? 'EXPIRED' : user.status}
                                     </span>
                                 </td>
-                                <td class="p-6 text-right space-x-3">
-                                    ${(user.status === 'Pending') ? 
-                                        `<button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs hover:underline">Approve</button>` : 
-                                        `<button onclick="updateStatus('${id}', 'Pending')" class="text-amber-400 font-bold text-xs hover:underline">Revoke</button>`
-                                    }
-                                    <button onclick="removeUser('${id}')" class="text-rose-500/40 hover:text-rose-500 text-xs font-bold transition-all">Delete</button>
+                                <td class="p-6 text-right space-x-2">
+                                    <button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs hover:underline">APPROVE (30D)</button>
+                                    <button onclick="updateStatus('${id}', 'Pending')" class="text-amber-400 font-bold text-xs hover:underline">REVOKE</button>
+                                    <button onclick="removeUser('${id}')" class="text-rose-500/40 hover:text-rose-500 text-xs">DEL</button>
                                 </td>
                             </tr>
                         `;
@@ -225,19 +210,24 @@
         }
 
         window.updateStatus = async (id, newStatus) => {
+            const ref = doc(db, "users", id);
+            let updateData = { status: newStatus };
+            if (newStatus === 'Activated') {
+                const expiry = new Date();
+                expiry.setDate(expiry.getDate() + 30);
+                updateData.expiryDate = expiry.getTime();
+            }
             try {
-                const ref = doc(db, "users", id);
-                await updateDoc(ref, { status: newStatus });
+                await updateDoc(ref, updateData);
             } catch (e) {
                 alert("Error: " + e.message);
             }
         };
 
         window.removeUser = async (id) => {
-            if (confirm('Delete this user record?')) {
+            if (confirm('Delete user?')) {
                 try {
-                    const ref = doc(db, "users", id);
-                    await deleteDoc(ref);
+                    await deleteDoc(doc(db, "users", id));
                 } catch (e) {
                     alert("Error: " + e.message);
                 }
