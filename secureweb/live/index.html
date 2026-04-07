@@ -11,21 +11,19 @@
         .view-hidden { display: none !important; }
         .glass-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .status-pill { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="login-view" class="min-h-screen flex items-center justify-center p-6">
-        <div class="glass-card p-10 rounded-[32px] w-full max-w-md shadow-2xl">
+        <div class="glass-card p-10 rounded-[32px] w-full max-w-md shadow-2xl text-center">
             <div class="flex flex-col items-center mb-8">
                 <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center font-bold text-black mb-4">S</div>
-                <h2 class="text-2xl font-bold tracking-tight text-white">Admin Authentication</h2>
+                <h2 class="text-2xl font-bold tracking-tight text-white">Admin Console</h2>
             </div>
-            <input type="text" id="username" placeholder="Username" class="w-full mb-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-700 outline-none">
-            <input type="password" id="password" placeholder="Access Token" class="w-full mb-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-700 outline-none">
-            <button onclick="handleLogin()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl transition-all">LOGIN TO CLOUD</button>
+            <input type="text" id="username" placeholder="Username" class="w-full mb-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-700 outline-none text-white">
+            <input type="password" id="password" placeholder="Access Token" class="w-full mb-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-700 outline-none text-white">
+            <button id="loginBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl transition-all">LOGIN TO CLOUD</button>
         </div>
     </div>
 
@@ -40,35 +38,30 @@
             </div>
 
             <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
-                <div class="relative w-full">
-                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Phone or Email..." class="w-full p-4 pl-12 bg-slate-900/50 rounded-2xl border border-slate-700 outline-none transition-all text-sm">
-                </div>
-                <button onclick="manualRefresh()" id="refreshBtn" class="flex items-center justify-center gap-2 bg-slate-800 px-8 py-4 rounded-2xl text-sm font-bold border border-slate-700">SYNC CLOUD</button>
+                <input type="text" id="searchInput" placeholder="Search by Phone or Email..." class="w-full p-4 bg-slate-900/50 rounded-2xl border border-slate-700 outline-none text-sm text-white">
+                <button id="refreshBtn" class="bg-slate-800 px-8 py-4 rounded-2xl text-sm font-bold border border-slate-700 whitespace-nowrap">SYNC CLOUD</button>
             </div>
 
-            <div class="glass-card rounded-3xl overflow-hidden shadow-xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left" id="userTable">
-                        <thead class="bg-slate-800/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
-                            <tr>
-                                <th class="p-6">User Contact</th>
-                                <th class="p-6">Machine ID / IP</th>
-                                <th class="p-6">Subscription Info</th>
-                                <th class="p-6">Status</th>
-                                <th class="p-6 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-800"></tbody>
-                    </table>
-                </div>
-                <div id="no-data" class="p-20 text-center text-slate-500">Waiting for cloud...</div>
+            <div class="glass-card rounded-3xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-800/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
+                        <tr>
+                            <th class="p-6">User</th>
+                            <th class="p-6">Machine / IP</th>
+                            <th class="p-6">Expiry</th>
+                            <th class="p-6">Status</th>
+                            <th class="p-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-800"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setIndexConfiguration } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, initializeFirestore } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBSKtg7y1C3bLGyojiI-6hCdU-UOCYrMYY",
@@ -76,22 +69,20 @@
             projectId: "web-doubbletech",
             storageBucket: "web-doubbletech.firebasestorage.app",
             messagingSenderId: "629547474346",
-            appId: "1:629547474346:web:d788f9876601e8fc545fd3",
-            measurementId: "G-3VEKHEH99Q"
+            appId: "1:629547474346:web:d788f9876601e8fc545fd3"
         };
 
         const app = initializeApp(firebaseConfig);
         
-        // STABILITY FIX: Force Long Polling for Dashboard
-        const db = getFirestore(app);
-        db.settings({
-            experimentalForceLongPolling: true,
-            useFetchStreams: false
+        // Correct way to set Long Polling in Firebase 11
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true
         });
 
         let unsubscribe = null;
 
-        window.handleLogin = function() {
+        // Login Logic
+        document.getElementById('loginBtn').addEventListener('click', () => {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             if (u === 'admin' && p === 'doubble2026') {
@@ -99,67 +90,59 @@
                 document.getElementById('dashboard-view').classList.remove('view-hidden');
                 startLiveSync();
             } else { alert('Access Denied'); }
-        };
+        });
 
-        window.manualRefresh = function() { startLiveSync(); };
-
-        window.filterTable = function() {
+        // Search Filter
+        document.getElementById('searchInput').addEventListener('keyup', () => {
             const filter = document.getElementById("searchInput").value.toLowerCase();
             const rows = document.querySelectorAll("#tableBody tr");
             rows.forEach(row => { row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none"; });
-        };
+        });
+
+        document.getElementById('refreshBtn').addEventListener('click', () => startLiveSync());
 
         function startLiveSync() {
             if (unsubscribe) unsubscribe();
-            const usersRef = collection(db, "users");
-            unsubscribe = onSnapshot(usersRef, (snapshot) => {
+            unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 snapshot.forEach((snap) => {
                     const user = snap.data();
                     const id = snap.id;
-                    const now = Date.now();
-                    const isExpired = user.expiryDate && now > user.expiryDate;
-                    const isActive = (user.status === 'Activated' || user.status === 'Active') && !isExpired;
-                    const expiryStr = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString() : 'Not Set';
-
-                    const row = `
-                        <tr class="hover:bg-slate-800/30">
-                            <td class="p-6">
-                                <div class="font-bold text-white">${user.phone}</div>
-                                <div class="text-xs text-slate-400">${user.email}</div>
-                            </td>
-                            <td class="p-6">
-                                <div class="text-[10px] text-slate-300 bg-slate-800 px-2 py-1 rounded inline-block">ID: ${user.machineId}</div>
-                                <div class="text-[10px] text-emerald-400 mt-1">IP: ${user.ip || '0.0.0.0'}</div>
-                            </td>
-                            <td class="p-6 text-xs ${isExpired ? 'text-rose-400 font-bold' : 'text-slate-400'}">Expires: ${expiryStr}</td>
-                            <td class="p-6"><span class="status-pill ${isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${isExpired ? 'EXPIRED' : user.status}</span></td>
-                            <td class="p-6 text-right space-x-2">
-                                <button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs">APPROVE</button>
-                                <button onclick="removeUser('${id}')" class="text-rose-500/40 text-xs">DEL</button>
-                            </td>
-                        </tr>
+                    const isExpired = user.expiryDate && Date.now() > user.expiryDate;
+                    
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-800/30 transition-colors";
+                    row.innerHTML = `
+                        <td class="p-6"><div class="font-bold text-white">${user.phone}</div><div class="text-xs text-slate-400">${user.email}</div></td>
+                        <td class="p-6"><div class="text-[10px] text-slate-300">ID: ${user.machineId}</div><div class="text-[10px] text-emerald-400">IP: ${user.ip || '0.0.0.0'}</div></td>
+                        <td class="p-6 text-xs ${isExpired ? 'text-rose-400' : 'text-slate-400'}">${user.expiryDate ? new Date(user.expiryDate).toLocaleDateString() : 'N/A'}</td>
+                        <td class="p-6"><span class="status-pill ${!isExpired && (user.status === 'Activated' || user.status === 'Active') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${isExpired ? 'EXPIRED' : user.status}</span></td>
+                        <td class="p-6 text-right space-x-2">
+                            <button class="approve-btn text-emerald-400 font-bold text-xs">APPROVE</button>
+                            <button class="delete-btn text-rose-500/40 text-xs">DEL</button>
+                        </td>
                     `;
-                    tbody.innerHTML += row;
+                    
+                    // Add listeners to buttons inside the row
+                    row.querySelector('.approve-btn').onclick = () => updateStatus(id, 'Activated');
+                    row.querySelector('.delete-btn').onclick = () => removeUser(id);
+                    
+                    tbody.appendChild(row);
                 });
             });
         }
 
-        window.updateStatus = async (id, newStatus) => {
+        async function updateStatus(id, newStatus) {
             const ref = doc(db, "users", id);
-            let updateData = { status: newStatus };
-            if (newStatus === 'Activated') {
-                const expiry = new Date();
-                expiry.setDate(expiry.getDate() + 30);
-                updateData.expiryDate = expiry.getTime();
-            }
-            await updateDoc(ref, updateData);
-        };
+            const expiry = new Date();
+            expiry.setDate(expiry.getDate() + 30);
+            await updateDoc(ref, { status: newStatus, expiryDate: expiry.getTime() });
+        }
 
-        window.removeUser = async (id) => {
+        async function removeUser(id) {
             if (confirm('Delete user?')) await deleteDoc(doc(db, "users", id));
-        };
+        }
     </script>
 </body>
 </html>
