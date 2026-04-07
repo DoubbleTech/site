@@ -11,6 +11,10 @@
         .view-hidden { display: none !important; }
         .glass-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .status-pill { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        
+        /* Animation for the refresh icon */
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -44,7 +48,7 @@
                 </button>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="glass-card p-6 rounded-3xl">
                     <p class="text-slate-400 text-xs font-bold uppercase mb-2">Active Users</p>
                     <span id="stat-active" class="text-4xl font-bold text-emerald-400">0</span>
@@ -65,14 +69,21 @@
                 </div>
             </div>
 
+            <div class="flex justify-end mb-4">
+                <button onclick="manualRefresh()" id="refreshBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all">
+                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                    SYNC CLOUD DATA
+                </button>
+            </div>
+
             <div class="glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-slate-800/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
                             <tr>
                                 <th class="p-6">User Phone</th>
-                                <th class="p-6">Live IP Address</th>
-                                <th class="p-6">Machine ID</th>
+                                <th class="p-6">Device/Status</th>
+                                <th class="p-6">Last Seen</th>
                                 <th class="p-6">Status</th>
                                 <th class="p-6 text-right">Actions</th>
                             </tr>
@@ -90,21 +101,21 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, query, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-        // YOUR FIREBASE CONFIG
         const firebaseConfig = {
-          apiKey: "AIzaSyBSKtg7y1C3bLGyojiI-6hCdU-UOCYrMYY",
-          authDomain: "web-doubbletech.firebaseapp.com",
-          projectId: "web-doubbletech",
-          storageBucket: "web-doubbletech.firebasestorage.app",
-          messagingSenderId: "629547474346",
-          appId: "1:629547474346:web:d788f9876601e8fc545fd3",
-          measurementId: "G-3VEKHEH99Q"
+            apiKey: "AIzaSyBSKtg7y1C3bLGyojiI-6hCdU-UOCYrMYY",
+            authDomain: "web-doubbletech.firebaseapp.com",
+            projectId: "web-doubbletech",
+            storageBucket: "web-doubbletech.firebasestorage.app",
+            messagingSenderId: "629547474346",
+            appId: "1:629547474346:web:d788f9876601e8fc545fd3",
+            measurementId: "G-3VEKHEH99Q"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        let unsubscribe = null;
 
         // LOGIN HANDLER
         window.handleLogin = function() {
@@ -120,17 +131,41 @@
             }
         };
 
-        // REAL-TIME SYNC
-        function startLiveSync() {
-            const usersRef = collection(db, "artifacts", "doubbletech-secure-web", "public", "data", "users");
+        // MANUAL REFRESH FUNCTION
+        window.manualRefresh = async function() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
             
-            onSnapshot(usersRef, (snapshot) => {
+            // Visual feedback
+            btn.classList.add('opacity-50');
+            icon.classList.add('spin');
+            
+            try {
+                // Restart the live listener
+                startLiveSync();
+                console.log("Cloud Data Resynced");
+            } finally {
+                setTimeout(() => {
+                    btn.classList.remove('opacity-50');
+                    icon.classList.remove('spin');
+                }, 800);
+            }
+        };
+
+        // REAL-TIME SYNC ENGINE
+        function startLiveSync() {
+            if (unsubscribe) unsubscribe(); // Prevent duplicate listeners
+
+            // PATH FIXED: Uses simple "users" collection to match Extension
+            const usersRef = collection(db, "users");
+            
+            unsubscribe = onSnapshot(usersRef, (snapshot) => {
                 const tbody = document.getElementById('tableBody');
                 const noData = document.getElementById('no-data');
                 
                 tbody.innerHTML = '';
-                let active = 0;
-                let pending = 0;
+                let activeCount = 0;
+                let pendingCount = 0;
 
                 if (snapshot.empty) {
                     noData.classList.remove('view-hidden');
@@ -141,25 +176,34 @@
                         const user = snap.data();
                         const id = snap.id;
                         
-                        if (user.status === 'Active') active++;
-                        else pending++;
+                        if (user.status === 'Activated' || user.status === 'Active') activeCount++;
+                        else pendingCount++;
+
+                        const timestamp = user.timestamp ? new Date(user.timestamp).toLocaleString() : 'N/A';
 
                         const row = `
                             <tr class="hover:bg-slate-800/30 transition-colors">
-                                <td class="p-6 font-semibold">${user.phone || 'Unknown'}</td>
-                                <td class="p-6 text-xs text-slate-400 font-mono">${user.ip || '0.0.0.0'}</td>
-                                <td class="p-6 text-xs text-slate-400 font-mono">${user.machineId || 'N/A'}</td>
                                 <td class="p-6">
-                                    <span class="status-pill ${user.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">
+                                    <div class="font-bold text-white">${user.phone || 'Unknown'}</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-tighter">UID: ${id}</div>
+                                </td>
+                                <td class="p-6">
+                                    <div class="text-xs text-slate-300 font-mono">${user.platform || 'Web Portal'}</div>
+                                </td>
+                                <td class="p-6 text-xs text-slate-400">
+                                    ${timestamp}
+                                </td>
+                                <td class="p-6">
+                                    <span class="status-pill ${user.status === 'Activated' || user.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
                                         ${user.status}
                                     </span>
                                 </td>
                                 <td class="p-6 text-right space-x-3">
-                                    ${user.status === 'Pending' ? 
-                                        `<button onclick="updateStatus('${id}', 'Active')" class="text-emerald-400 font-bold text-xs hover:underline">Approve</button>` : 
+                                    ${(user.status === 'Pending') ? 
+                                        `<button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs hover:underline">Approve</button>` : 
                                         `<button onclick="updateStatus('${id}', 'Pending')" class="text-amber-400 font-bold text-xs hover:underline">Revoke</button>`
                                     }
-                                    <button onclick="removeUser('${id}')" class="text-rose-500/50 hover:text-rose-500 text-xs">Delete</button>
+                                    <button onclick="removeUser('${id}')" class="text-rose-500/40 hover:text-rose-500 text-xs font-bold transition-all">Delete</button>
                                 </td>
                             </tr>
                         `;
@@ -167,22 +211,34 @@
                     });
                 }
 
-                document.getElementById('stat-active').innerText = active;
-                document.getElementById('stat-pending').innerText = pending;
-                document.getElementById('stat-revenue').innerText = (active * 299).toLocaleString();
+                // Update Stats
+                document.getElementById('stat-active').innerText = activeCount;
+                document.getElementById('stat-pending').innerText = pendingCount;
+                document.getElementById('stat-revenue').innerText = (activeCount * 299).toLocaleString();
+            }, (error) => {
+                console.error("Live Sync Error:", error);
+                alert("Permission Denied: Check Firestore Rules");
             });
         }
 
-        // DATABASE ACTIONS
-        window.updateStatus = async (id, status) => {
-            const ref = doc(db, "artifacts", "doubbletech-secure-web", "public", "data", "users", id);
-            await updateDoc(ref, { status: status });
+        // DATABASE ACTIONS (Standardized Paths)
+        window.updateStatus = async (id, newStatus) => {
+            try {
+                const ref = doc(db, "users", id);
+                await updateDoc(ref, { status: newStatus });
+            } catch (e) {
+                alert("Error updating status: " + e.message);
+            }
         };
 
         window.removeUser = async (id) => {
-            if (confirm('Permanently remove this user?')) {
-                const ref = doc(db, "artifacts", "doubbletech-secure-web", "public", "data", "users", id);
-                await deleteDoc(ref);
+            if (confirm('Permanently remove this user from Doubble Tech database?')) {
+                try {
+                    const ref = doc(db, "users", id);
+                    await deleteDoc(ref);
+                } catch (e) {
+                    alert("Error deleting user: " + e.message);
+                }
             }
         };
     </script>
