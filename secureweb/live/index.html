@@ -11,8 +11,6 @@
         .view-hidden { display: none !important; }
         .glass-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .status-pill { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        
-        /* Animation for the refresh icon */
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
@@ -69,21 +67,25 @@
                 </div>
             </div>
 
-            <div class="flex justify-end mb-4">
-                <button onclick="manualRefresh()" id="refreshBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all">
-                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-                    SYNC CLOUD DATA
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
+                <div class="relative w-full">
+                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Phone or Email..." class="w-full p-4 pl-12 bg-slate-900/50 rounded-2xl border border-slate-700 focus:border-emerald-500 outline-none transition-all text-sm">
+                    <svg class="absolute left-4 top-4 text-slate-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <button onclick="manualRefresh()" id="refreshBtn" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-2xl text-sm font-bold border border-slate-700 transition-all whitespace-nowrap w-full md:w-auto">
+                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                    SYNC CLOUD
                 </button>
             </div>
 
             <div class="glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left" id="userTable">
                         <thead class="bg-slate-800/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
                             <tr>
-                                <th class="p-6">User Phone</th>
-                                <th class="p-6">Device/Status</th>
-                                <th class="p-6">Last Seen</th>
+                                <th class="p-6">User Contact</th>
+                                <th class="p-6">Machine ID</th>
+                                <th class="p-6">Date Registered</th>
                                 <th class="p-6">Status</th>
                                 <th class="p-6 text-right">Actions</th>
                             </tr>
@@ -101,7 +103,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, query, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBSKtg7y1C3bLGyojiI-6hCdU-UOCYrMYY",
@@ -117,52 +119,57 @@
         const db = getFirestore(app);
         let unsubscribe = null;
 
-        // LOGIN HANDLER
         window.handleLogin = function() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-
             if (u === 'admin' && p === 'doubble2026') {
                 document.getElementById('login-view').classList.add('view-hidden');
                 document.getElementById('dashboard-view').classList.remove('view-hidden');
                 startLiveSync();
             } else {
-                alert('Access Denied: Incorrect Credentials');
+                alert('Access Denied');
             }
         };
 
-        // MANUAL REFRESH FUNCTION
         window.manualRefresh = async function() {
             const btn = document.getElementById('refreshBtn');
             const icon = document.getElementById('refreshIcon');
-            
-            // Visual feedback
             btn.classList.add('opacity-50');
             icon.classList.add('spin');
-            
-            try {
-                // Restart the live listener
-                startLiveSync();
-                console.log("Cloud Data Resynced");
-            } finally {
-                setTimeout(() => {
-                    btn.classList.remove('opacity-50');
-                    icon.classList.remove('spin');
-                }, 800);
+            startLiveSync();
+            setTimeout(() => {
+                btn.classList.remove('opacity-50');
+                icon.classList.remove('spin');
+            }, 800);
+        };
+
+        // Filter Function for Search
+        window.filterTable = function() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById("userTable");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[0]; // Search within 'User Contact' column
+                if (td) {
+                    const textValue = td.textContent || td.innerText;
+                    if (textValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
             }
         };
 
-        // REAL-TIME SYNC ENGINE
         function startLiveSync() {
-            if (unsubscribe) unsubscribe(); // Prevent duplicate listeners
-
-            // PATH FIXED: Uses simple "users" collection to match Extension
+            if (unsubscribe) unsubscribe();
             const usersRef = collection(db, "users");
             
             unsubscribe = onSnapshot(usersRef, (snapshot) => {
                 const tbody = document.getElementById('tableBody');
                 const noData = document.getElementById('no-data');
-                
                 tbody.innerHTML = '';
                 let activeCount = 0;
                 let pendingCount = 0;
@@ -171,7 +178,6 @@
                     noData.classList.remove('view-hidden');
                 } else {
                     noData.classList.add('view-hidden');
-                    
                     snapshot.forEach((snap) => {
                         const user = snap.data();
                         const id = snap.id;
@@ -179,19 +185,21 @@
                         if (user.status === 'Activated' || user.status === 'Active') activeCount++;
                         else pendingCount++;
 
-                        const timestamp = user.timestamp ? new Date(user.timestamp).toLocaleString() : 'N/A';
+                        const dateStr = user.timestamp ? new Date(user.timestamp).toLocaleDateString() : 'N/A';
 
                         const row = `
                             <tr class="hover:bg-slate-800/30 transition-colors">
                                 <td class="p-6">
-                                    <div class="font-bold text-white">${user.phone || 'Unknown'}</div>
-                                    <div class="text-[10px] text-slate-500 uppercase tracking-tighter">UID: ${id}</div>
+                                    <div class="font-bold text-white">${user.phone || 'No Phone'}</div>
+                                    <div class="text-xs text-slate-400">${user.email || 'No Email'}</div>
                                 </td>
                                 <td class="p-6">
-                                    <div class="text-xs text-slate-300 font-mono">${user.platform || 'Web Portal'}</div>
+                                    <div class="text-[10px] text-slate-300 font-mono bg-slate-800 px-2 py-1 rounded inline-block">
+                                        ${user.machineId || 'NOT_FOUND'}
+                                    </div>
                                 </td>
                                 <td class="p-6 text-xs text-slate-400">
-                                    ${timestamp}
+                                    ${dateStr}
                                 </td>
                                 <td class="p-6">
                                     <span class="status-pill ${user.status === 'Activated' || user.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
@@ -210,34 +218,28 @@
                         tbody.innerHTML += row;
                     });
                 }
-
-                // Update Stats
                 document.getElementById('stat-active').innerText = activeCount;
                 document.getElementById('stat-pending').innerText = pendingCount;
                 document.getElementById('stat-revenue').innerText = (activeCount * 299).toLocaleString();
-            }, (error) => {
-                console.error("Live Sync Error:", error);
-                alert("Permission Denied: Check Firestore Rules");
             });
         }
 
-        // DATABASE ACTIONS (Standardized Paths)
         window.updateStatus = async (id, newStatus) => {
             try {
                 const ref = doc(db, "users", id);
                 await updateDoc(ref, { status: newStatus });
             } catch (e) {
-                alert("Error updating status: " + e.message);
+                alert("Error: " + e.message);
             }
         };
 
         window.removeUser = async (id) => {
-            if (confirm('Permanently remove this user from Doubble Tech database?')) {
+            if (confirm('Delete this user record?')) {
                 try {
                     const ref = doc(db, "users", id);
                     await deleteDoc(ref);
                 } catch (e) {
-                    alert("Error deleting user: " + e.message);
+                    alert("Error: " + e.message);
                 }
             }
         };
