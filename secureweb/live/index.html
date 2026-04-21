@@ -130,10 +130,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            // PASTE YOUR ACTUAL FIREBASE KEYS HERE
             apiKey: "AIzaSyBSKtg7y1C3bLGyojiI-6hCdU-UOCYrMYY",
             authDomain: "web-doubbletech.firebaseapp.com",
             projectId: "web-doubbletech",
@@ -147,7 +146,6 @@
         const db = getFirestore(app);
         let unsubscribe = null;
         
-        // Global object to store data for the modal
         window.cachedUsers = {}; 
 
         window.handleLogin = function() {
@@ -188,7 +186,9 @@
                 tbody.innerHTML = '';
                 window.cachedUsers = {}; 
                 
-                let activeCount = 0, pendingCount = 0;
+                let activeCount = 0;
+                let pendingCount = 0;
+                let totalRevenue = 0; // New revenue tracker!
 
                 if (snapshot.empty) {
                     noData.classList.remove('view-hidden');
@@ -204,8 +204,15 @@
                         const isExpired = user.expiryDate && now > user.expiryDate;
                         const isActive = (user.status === 'Activated' || user.status === 'Active') && !isExpired;
 
-                        if (isActive) activeCount++;
-                        else pendingCount++;
+                        const maxSites = user.maxSites || 1; // Determines how many sites they paid for
+
+                        if (isActive) {
+                            activeCount++;
+                            // Calculate revenue based on the number of paid slots
+                            totalRevenue += (maxSites * 299); 
+                        } else {
+                            pendingCount++;
+                        }
 
                         const expiryStr = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString() : 'Not Set';
                         const resetCount = user.resetCount || 0;
@@ -225,7 +232,7 @@
                                 </td>
                                 <td class="p-6">
                                     <button onclick="openSitesModal('${id}')" class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
-                                        <span>${configuredSites.length} Active</span>
+                                        <span>${configuredSites.length}/${maxSites} Active</span>
                                         ${pendingSites.length > 0 ? `<span class="bg-amber-500 text-amber-950 px-1.5 py-0.5 rounded-full text-[9px]">${pendingSites.length} Pend</span>` : ''}
                                     </button>
                                 </td>
@@ -249,7 +256,8 @@
                 }
                 document.getElementById('stat-active').innerText = activeCount;
                 document.getElementById('stat-pending').innerText = pendingCount;
-                document.getElementById('stat-revenue').innerText = (activeCount * 299).toLocaleString();
+                // Render the properly scaled revenue
+                document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString();
             });
         }
 
@@ -284,7 +292,6 @@
                 pendingDiv.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No pending requests.</div>';
             } else {
                 pending.forEach((site, index) => {
-                    // Extract data whether it's an old string format or the new Object format
                     const siteUrl = typeof site === 'string' ? site : site.url;
                     const siteAlias = typeof site === 'string' ? 'No Alias Provided' : site.alias;
                     
@@ -309,7 +316,6 @@
             document.getElementById('sites-modal').classList.add('view-hidden');
         };
 
-        // This removes the pending site and directly adds it to their secure list!
         window.approvePendingSite = async function(userId, index) {
             const user = window.cachedUsers[userId];
             if (!user) return;
@@ -325,28 +331,24 @@
                     const data = userDoc.data();
                     
                     const currentPending = data.pendingSites || [];
-                    
-                    // 1. Remove from pending list
                     currentPending.splice(index, 1);
                     
-                    // 2. Add to active configured sites
                     const newConfigured = data.configuredSites || [];
                     if (!newConfigured.some(s => s.url === actualUrl)) {
                         newConfigured.push({ url: actualUrl, alias: actualAlias });
                     }
                     
-                    // 3. Add to the allowedOrigins permissions array
                     const newAllowed = data.allowedOrigins || [];
                     if (!newAllowed.includes(actualUrl)) newAllowed.push(actualUrl);
 
-                    // 4. Send all updates to Firebase
                     await updateDoc(ref, {
                         pendingSites: currentPending,
                         configuredSites: newConfigured,
-                        allowedOrigins: newAllowed
+                        allowedOrigins: newAllowed,
+                        maxSites: increment(1)
                     });
                     
-                    closeModal(); // Close modal so the dashboard UI naturally refreshes
+                    closeModal(); 
                 } catch (e) {
                     alert("Error approving site: " + e.message);
                 }
@@ -360,6 +362,7 @@
                 const expiry = new Date();
                 expiry.setDate(expiry.getDate() + 30);
                 updateData.expiryDate = expiry.getTime();
+                updateData.maxSites = increment(0); 
             }
             try {
                 await updateDoc(ref, updateData);
