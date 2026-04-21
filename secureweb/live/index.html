@@ -13,8 +13,6 @@
         .status-pill { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        /* Modal Styles */
         .modal-overlay { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
         .site-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
         .site-item:last-child { border-bottom: none; }
@@ -29,13 +27,9 @@
                 <h2 class="text-2xl font-bold tracking-tight text-white">Admin Authentication</h2>
                 <p class="text-slate-400 text-sm">Enter cloud credentials to manage users</p>
             </div>
-            
             <input type="text" id="username" placeholder="Username" class="w-full mb-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-700 focus:border-emerald-500 outline-none transition-all">
             <input type="password" id="password" placeholder="Access Token" class="w-full mb-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-700 focus:border-emerald-500 outline-none transition-all">
-            
-            <button onclick="handleLogin()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20">
-                LOGIN TO CLOUD
-            </button>
+            <button onclick="handleLogin()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20">LOGIN TO CLOUD</button>
         </div>
     </div>
 
@@ -46,9 +40,7 @@
                     <h1 class="text-3xl font-bold text-white tracking-tight">Secure Web Console</h1>
                     <p class="text-slate-400 text-sm">Managing Doubble Tech Subscriptions</p>
                 </div>
-                <button onclick="location.reload()" class="bg-rose-500/10 text-rose-400 px-6 py-2 rounded-full font-bold text-xs border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all">
-                    LOGOUT
-                </button>
+                <button onclick="location.reload()" class="bg-rose-500/10 text-rose-400 px-6 py-2 rounded-full font-bold text-xs border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all">LOGOUT</button>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -75,10 +67,8 @@
             <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
                 <div class="relative w-full">
                     <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Phone or Email..." class="w-full p-4 pl-12 bg-slate-900/50 rounded-2xl border border-slate-700 focus:border-emerald-500 outline-none transition-all text-sm">
-                    <svg class="absolute left-4 top-4 text-slate-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 </div>
                 <button onclick="manualRefresh()" id="refreshBtn" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-2xl text-sm font-bold border border-slate-700 transition-all whitespace-nowrap w-full md:w-auto">
-                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
                     SYNC CLOUD
                 </button>
             </div>
@@ -99,31 +89,25 @@
                         <tbody id="tableBody" class="divide-y divide-slate-800"></tbody>
                     </table>
                 </div>
-                <div id="no-data" class="p-20 text-center text-slate-500">
-                    Waiting for cloud connection...
-                </div>
+                <div id="no-data" class="p-20 text-center text-slate-500">Waiting for cloud connection...</div>
             </div>
         </div>
     </div>
 
     <div id="sites-modal" class="fixed inset-0 modal-overlay z-50 view-hidden flex items-center justify-center p-4">
         <div class="glass-card bg-slate-900 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">X</button>
             <h3 class="text-xl font-bold text-white mb-1">User Sites</h3>
             <p id="modal-user-phone" class="text-xs text-slate-400 mb-6"></p>
 
             <div class="mb-6">
                 <h4 class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3">Active Secure Sites</h4>
-                <div id="modal-active-sites" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
-                    </div>
+                <div id="modal-active-sites" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden"></div>
             </div>
 
             <div>
                 <h4 class="text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">Pending Additional Sites</h4>
-                <div id="modal-pending-sites" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
-                    </div>
+                <div id="modal-pending-sites" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden"></div>
             </div>
         </div>
     </div>
@@ -145,7 +129,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         let unsubscribe = null;
-        
         window.cachedUsers = {}; 
 
         window.handleLogin = function() {
@@ -186,9 +169,7 @@
                 tbody.innerHTML = '';
                 window.cachedUsers = {}; 
                 
-                let activeCount = 0;
-                let pendingCount = 0;
-                let totalRevenue = 0; // New revenue tracker!
+                let activeCount = 0, pendingCount = 0, totalRevenue = 0;
 
                 if (snapshot.empty) {
                     noData.classList.remove('view-hidden');
@@ -198,25 +179,20 @@
                         const user = snap.data();
                         const id = snap.id;
                         const now = Date.now();
-                        
                         window.cachedUsers[id] = user; 
                         
                         const isExpired = user.expiryDate && now > user.expiryDate;
                         const isActive = (user.status === 'Activated' || user.status === 'Active') && !isExpired;
-
-                        const maxSites = user.maxSites || 1; // Determines how many sites they paid for
+                        const maxSites = user.maxSites || 1; 
 
                         if (isActive) {
                             activeCount++;
-                            // Calculate revenue based on the number of paid slots
                             totalRevenue += (maxSites * 299); 
                         } else {
                             pendingCount++;
                         }
 
                         const expiryStr = user.expiryDate ? new Date(user.expiryDate).toLocaleDateString() : 'Not Set';
-                        const resetCount = user.resetCount || 0;
-                        
                         const configuredSites = user.configuredSites || [];
                         const pendingSites = user.pendingSites || [];
 
@@ -228,7 +204,6 @@
                                 </td>
                                 <td class="p-6">
                                     <div class="text-[10px] text-slate-300 font-mono bg-slate-800 px-2 py-1 rounded inline-block">ID: ${user.machineId || 'N/A'}</div>
-                                    <div class="text-[9px] text-slate-500 mt-1">DEVICE RESETS: ${resetCount}/2</div>
                                 </td>
                                 <td class="p-6">
                                     <button onclick="openSitesModal('${id}')" class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
@@ -245,7 +220,7 @@
                                     </span>
                                 </td>
                                 <td class="p-6 text-right space-x-2">
-                                    <button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs hover:underline">APPROVE (30D)</button>
+                                    <button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs hover:underline">APPROVE</button>
                                     <button onclick="updateStatus('${id}', 'Pending')" class="text-amber-400 font-bold text-xs hover:underline">REVOKE</button>
                                     <button onclick="removeUser('${id}')" class="text-rose-500/40 hover:text-rose-500 text-xs ml-2">DEL</button>
                                 </td>
@@ -256,18 +231,15 @@
                 }
                 document.getElementById('stat-active').innerText = activeCount;
                 document.getElementById('stat-pending').innerText = pendingCount;
-                // Render the properly scaled revenue
                 document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString();
             });
         }
 
-        // --- MODAL LOGIC ---
         window.openSitesModal = function(id) {
             const user = window.cachedUsers[id];
             if (!user) return;
 
             document.getElementById('modal-user-phone').innerText = user.phone || 'No Phone';
-            
             const activeDiv = document.getElementById('modal-active-sites');
             const pendingDiv = document.getElementById('modal-pending-sites');
             activeDiv.innerHTML = '';
@@ -278,10 +250,12 @@
                 activeDiv.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No active sites.</div>';
             } else {
                 configured.forEach(site => {
+                    const unit = site.unit || 'm';
+                    const timeStr = site.timeout ? ` (${site.timeout}${unit})` : '';
                     activeDiv.innerHTML += `
                         <div class="site-item p-3 flex justify-between items-center">
                             <div class="truncate text-sm text-slate-300 pr-4">${site.url}</div>
-                            <div class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-mono whitespace-nowrap">${site.alias}</div>
+                            <div class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-mono whitespace-nowrap">${site.alias}${timeStr}</div>
                         </div>
                     `;
                 });
@@ -293,13 +267,14 @@
             } else {
                 pending.forEach((site, index) => {
                     const siteUrl = typeof site === 'string' ? site : site.url;
-                    const siteAlias = typeof site === 'string' ? 'No Alias Provided' : site.alias;
+                    const siteAlias = typeof site === 'string' ? 'No Alias' : site.alias;
+                    const siteTime = site.timeout ? `${site.timeout}${site.unit || 'm'}` : '5m';
                     
                     pendingDiv.innerHTML += `
                         <div class="site-item p-3 flex justify-between items-center">
                             <div>
                                 <div class="truncate text-sm text-slate-300 pr-4">${siteUrl}</div>
-                                <div class="text-[10px] text-amber-400 font-mono mt-1">Alias: ${siteAlias}</div>
+                                <div class="text-[10px] text-amber-400 font-mono mt-1">Alias: ${siteAlias} | Time: ${siteTime}</div>
                             </div>
                             <button onclick="approvePendingSite('${id}', ${index})" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1 rounded text-xs font-bold transition-all whitespace-nowrap">
                                 APPROVE SITE
@@ -308,7 +283,6 @@
                     `;
                 });
             }
-
             document.getElementById('sites-modal').classList.remove('view-hidden');
         };
 
@@ -323,6 +297,9 @@
             const siteToApprove = user.pendingSites[index];
             const actualUrl = typeof siteToApprove === 'string' ? siteToApprove : siteToApprove.url;
             const actualAlias = typeof siteToApprove === 'string' ? 'Hidden Site' : siteToApprove.alias;
+            // FIXED: Now we pull the timeout and unit correctly during approval
+            const actualTimeout = siteToApprove.timeout || 5;
+            const actualUnit = siteToApprove.unit || 'm';
 
             if (confirm(`Approve payment and secure ${actualUrl}?`)) {
                 const ref = doc(db, "users", userId);
@@ -335,7 +312,7 @@
                     
                     const newConfigured = data.configuredSites || [];
                     if (!newConfigured.some(s => s.url === actualUrl)) {
-                        newConfigured.push({ url: actualUrl, alias: actualAlias });
+                        newConfigured.push({ url: actualUrl, alias: actualAlias, timeout: actualTimeout, unit: actualUnit });
                     }
                     
                     const newAllowed = data.allowedOrigins || [];
@@ -373,11 +350,7 @@
 
         window.removeUser = async (id) => {
             if (confirm('Delete user?')) {
-                try {
-                    await deleteDoc(doc(db, "users", id));
-                } catch (e) {
-                    alert("Error: " + e.message);
-                }
+                try { await deleteDoc(doc(db, "users", id)); } catch (e) { alert("Error: " + e.message); }
             }
         };
     </script>
