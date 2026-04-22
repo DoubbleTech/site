@@ -249,8 +249,6 @@
         window.closeCustomConfirm = function() {
             document.getElementById('custom-confirm-modal').classList.add('view-hidden');
         };
-        // --------------------------
-
 
         window.handleLogin = function() {
             const u = document.getElementById('username').value;
@@ -280,7 +278,8 @@
             });
         };
 
-        window.generateCoupon = async function() {
+        // INSTANT UI UPDATE FOR COUPONS
+        window.generateCoupon = function() {
             const codeInput = document.getElementById('newCouponCode');
             const daysInput = document.getElementById('newCouponDays');
             const sitesInput = document.getElementById('newCouponSites');
@@ -295,31 +294,30 @@
                 return showCustomAlert('Missing Info', 'Please provide a valid code and number of days.', 'error');
             }
 
-            try {
-                await setDoc(doc(db, "coupons", code), {
-                    days: days,
-                    sitesGranted: sitesGranted,
-                    maxUses: maxUses,
-                    createdAt: Date.now(),
-                    usedBy: []
-                });
-                showCustomAlert('Success!', `Coupon ${code} created for ${days} days and ${sitesGranted} site(s).`, 'success');
-                codeInput.value = '';
-                daysInput.value = '';
-                sitesInput.value = '';
-                usesInput.value = '';
-            } catch (e) {
-                showCustomAlert('Error', 'Error creating coupon: ' + e.message, 'error');
-            }
+            // Execute without awaiting to make it feel instant
+            setDoc(doc(db, "coupons", code), {
+                days: days,
+                sitesGranted: sitesGranted,
+                maxUses: maxUses,
+                createdAt: Date.now(),
+                usedBy: []
+            }).catch(e => showCustomAlert('Error', 'Error creating coupon: ' + e.message, 'error'));
+
+            // Show success popup instantly
+            showCustomAlert('Success!', `Coupon ${code} created for ${days} days and ${sitesGranted} site(s).`, 'success');
+            
+            // Clear fields immediately
+            codeInput.value = '';
+            daysInput.value = '';
+            sitesInput.value = '';
+            usesInput.value = '';
         };
 
+        // INSTANT UI UPDATE FOR DELETING COUPONS
         window.deleteCoupon = function(code) {
-            showCustomConfirm(`Are you sure you want to delete promo code: ${code}?`, async () => {
-                try {
-                    await deleteDoc(doc(db, "coupons", code));
-                } catch (e) {
-                    showCustomAlert('Error', "Error deleting coupon: " + e.message, 'error');
-                }
+            showCustomConfirm(`Are you sure you want to delete promo code: ${code}?`, () => {
+                deleteDoc(doc(db, "coupons", code))
+                    .catch(e => showCustomAlert('Error', "Error deleting coupon: " + e.message, 'error'));
             });
         };
 
@@ -545,7 +543,8 @@
 
         window.closeModal = function() { document.getElementById('sites-modal').classList.add('view-hidden'); };
 
-        window.approvePendingSite = function(userId, index) {
+        // INSTANT UI UPDATE FOR SITE APPROVAL
+        window.approvePendingSite = async function(userId, index) {
             const user = window.cachedUsers[userId];
             if (!user) return;
             const siteToApprove = user.pendingSites[index];
@@ -557,6 +556,7 @@
             showCustomConfirm(`Approve payment and secure ${actualUrl}?`, async () => {
                 const ref = doc(db, "users", userId);
                 try {
+                    // We must await getDoc to get the current safe data
                     const userDoc = await getDoc(ref);
                     const data = userDoc.data();
                     const currentPending = data.pendingSites || [];
@@ -578,14 +578,16 @@
                     
                     if (!newAllowed.includes(actualUrl)) newAllowed.push(actualUrl);
 
-                    await updateDoc(ref, {
+                    // Execute without awaiting to make UI feel instant
+                    updateDoc(ref, {
                         pendingSites: currentPending,
                         configuredSites: newConfigured,
                         allowedOrigins: newAllowed,
                         maxSites: newMaxSites,
                         subscriptionType: 'paid', 
                         upgradePending: false 
-                    });
+                    }).catch(e => showCustomAlert('Error', e.message, 'error'));
+                    
                     closeModal(); 
                 } catch (e) { 
                     showCustomAlert('Error', 'Error approving site: ' + e.message, 'error'); 
@@ -593,15 +595,17 @@
             });
         };
 
-        window.approveWithDays = async (id) => {
+        window.approveWithDays = function(id) {
             const daysInput = document.getElementById(`days-${id}`).value;
             const days = parseInt(daysInput) || 30;
-            await updateStatus(id, 'Activated', days);
+            updateStatus(id, 'Activated', days);
         };
 
-        window.updateStatus = async (id, newStatus, days = 30) => {
+        // INSTANT UI UPDATE FOR USER STATUS
+        window.updateStatus = async function(id, newStatus, days = 30) {
             const ref = doc(db, "users", id);
             try {
+                // Must await getting current state
                 const userDoc = await getDoc(ref);
                 if (!userDoc.exists()) return;
                 const data = userDoc.data();
@@ -622,19 +626,17 @@
                     }
                 }
 
-                await updateDoc(ref, updateData); 
+                // Execute without awaiting
+                updateDoc(ref, updateData).catch(e => showCustomAlert('Error', e.message, 'error')); 
             } catch (e) { 
                 showCustomAlert('Error', "Error updating status: " + e.message, 'error'); 
             }
         };
 
+        // INSTANT UI UPDATE FOR DELETE USER
         window.removeUser = function(id) {
-            showCustomConfirm('Are you sure you want to completely delete this user?', async () => {
-                try { 
-                    await deleteDoc(doc(db, "users", id)); 
-                } catch (e) { 
-                    showCustomAlert('Error', "Error deleting user: " + e.message, 'error'); 
-                }
+            showCustomConfirm('Are you sure you want to completely delete this user?', () => {
+                deleteDoc(doc(db, "users", id)).catch(e => showCustomAlert('Error', "Error deleting user: " + e.message, 'error')); 
             });
         };
     </script>
