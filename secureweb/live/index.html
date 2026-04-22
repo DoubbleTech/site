@@ -253,7 +253,10 @@
 
                         if (isActive) {
                             activeCount++;
-                            totalRevenue += (maxSites * 299); 
+                            // Only calculate revenue for non-promo users or base value
+                            if (user.subscriptionType === 'paid') {
+                                totalRevenue += (maxSites * 299); 
+                            }
                         } else {
                             pendingCount++;
                         }
@@ -267,6 +270,7 @@
                                 <td class="p-6">
                                     <div class="font-bold text-white">${user.phone || 'No Phone'}</div>
                                     <div class="text-xs text-slate-400">${user.email || 'No Email'}</div>
+                                    <div class="text-[10px] mt-1 ${user.subscriptionType === 'promo' ? 'text-purple-400' : 'text-emerald-400'}">TYPE: ${user.subscriptionType || 'PAID'}</div>
                                 </td>
                                 <td class="p-6">
                                     <button onclick="openSitesModal('${id}')" class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
@@ -409,7 +413,8 @@
                         pendingSites: currentPending,
                         configuredSites: newConfigured,
                         allowedOrigins: newAllowed,
-                        maxSites: increment(1)
+                        maxSites: increment(1),
+                        subscriptionType: 'paid' // Upgrade them to Paid when an upsell is approved
                     });
                     closeModal(); 
                 } catch (e) { alert("Error approving site: " + e.message); }
@@ -424,7 +429,7 @@
 
         window.updateStatus = async (id, newStatus, days = 30) => {
             const ref = doc(db, "users", id);
-            let updateData = { status: newStatus };
+            let updateData = { status: newStatus, subscriptionType: 'paid' };
             if (newStatus === 'Activated') {
                 const expiry = new Date();
                 expiry.setDate(expiry.getDate() + days);
