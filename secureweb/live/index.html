@@ -52,16 +52,13 @@
                     <p class="text-slate-400 text-xs font-bold uppercase mb-2">Pending Approvals</p>
                     <span id="stat-pending" class="text-4xl font-bold text-amber-400">0</span>
                 </div>
-                <div class="glass-card p-6 rounded-3xl">
-                    <p class="text-slate-400 text-xs font-bold uppercase mb-2">Total Revenue</p>
-                    <span id="stat-revenue" class="text-4xl font-bold text-white">0</span> <small class="text-slate-500">PKR</small>
-                </div>
-                <div class="glass-card p-6 rounded-3xl border border-indigo-500/30">
+                <div class="glass-card p-6 rounded-3xl border border-indigo-500/30 md:col-span-2">
                     <p class="text-indigo-400 text-xs font-bold uppercase mb-2">Generate Coupon</p>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
                             <input type="text" id="newCouponCode" placeholder="Code (e.g. FREE7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white uppercase outline-none">
-                            <input type="number" id="newCouponDays" placeholder="Days" class="w-16 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="7">
+                            <input type="number" id="newCouponDays" placeholder="Days" class="w-20 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="7">
+                            <input type="number" id="newCouponSites" placeholder="Sites" title="Number of sites to unlock" class="w-20 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="1">
                         </div>
                         <input type="number" id="newCouponUses" placeholder="Max Uses (Leave blank for all users)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none">
                         <button onclick="generateCoupon()" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold py-2 rounded transition-all">CREATE PROMO</button>
@@ -79,6 +76,7 @@
                             <tr>
                                 <th class="p-6">Promo Code</th>
                                 <th class="p-6">Free Days</th>
+                                <th class="p-6">Sites Granted</th>
                                 <th class="p-6">Current Uses</th>
                                 <th class="p-6">Usage Limit</th>
                                 <th class="p-6 text-right">Actions</th>
@@ -191,22 +189,25 @@
         window.generateCoupon = async function() {
             const codeInput = document.getElementById('newCouponCode');
             const daysInput = document.getElementById('newCouponDays');
+            const sitesInput = document.getElementById('newCouponSites');
             const usesInput = document.getElementById('newCouponUses');
             
             const code = codeInput.value.trim().toUpperCase();
             const days = parseInt(daysInput.value);
-            const maxUses = parseInt(usesInput.value) || null; // Null means unlimited
+            const sitesGranted = parseInt(sitesInput.value) || 1;
+            const maxUses = parseInt(usesInput.value) || null; 
 
             if (!code || !days) return alert('Please provide a valid code and number of days.');
 
             try {
                 await setDoc(doc(db, "coupons", code), {
                     days: days,
+                    sitesGranted: sitesGranted,
                     maxUses: maxUses,
                     createdAt: Date.now(),
                     usedBy: []
                 });
-                alert(`Success! Coupon ${code} created.`);
+                alert(`Success! Coupon ${code} created for ${days} days and ${sitesGranted} site(s).`);
                 codeInput.value = '';
                 usesInput.value = '';
             } catch (e) {
@@ -228,7 +229,6 @@
             if (unsubscribeUsers) unsubscribeUsers();
             if (unsubscribeCoupons) unsubscribeCoupons();
 
-            // SYNC USERS
             unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
                 const tbody = document.getElementById('tableBody');
                 const noData = document.getElementById('no-data');
@@ -299,24 +299,25 @@
                 document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString();
             });
 
-            // SYNC COUPONS
             unsubscribeCoupons = onSnapshot(collection(db, "coupons"), (snapshot) => {
                 const tbody = document.getElementById('promoTableBody');
                 tbody.innerHTML = '';
                 
                 if (snapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 text-sm">No active promo codes.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500 text-sm">No active promo codes.</td></tr>`;
                 } else {
                     snapshot.forEach((snap) => {
                         const c = snap.data();
                         const code = snap.id;
-                        const limitStr = c.maxUses ? c.maxUses : 'Unlimited (All Users)';
+                        const limitStr = c.maxUses ? c.maxUses : 'Unlimited';
                         const usedCount = c.usedBy ? c.usedBy.length : 0;
+                        const sitesStr = c.sitesGranted || 1;
                         
                         tbody.innerHTML += `
                             <tr class="hover:bg-slate-800/30 transition-colors">
                                 <td class="p-6 font-bold text-indigo-400">${code}</td>
                                 <td class="p-6 text-white font-mono">${c.days} Days</td>
+                                <td class="p-6 text-white">${sitesStr} Sites</td>
                                 <td class="p-6 text-white">${usedCount}</td>
                                 <td class="p-6 text-slate-400 text-xs">${limitStr}</td>
                                 <td class="p-6 text-right">
@@ -329,7 +330,6 @@
             });
         }
 
-        // --- REMAINDER OF DASHBOARD LOGIC (Unchanged) ---
         window.openSitesModal = function(id) {
             const user = window.cachedUsers[id];
             if (!user) return;
