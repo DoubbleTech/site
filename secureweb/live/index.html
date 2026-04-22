@@ -136,14 +136,12 @@
 
             <div class="mb-6">
                 <h4 class="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-3">By Subscription Tier</h4>
-                <div id="modal-revenue-tiers" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50">
-                </div>
+                <div id="modal-revenue-tiers" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50"></div>
             </div>
 
             <div>
                 <h4 class="text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-3">By Recent Payment Month</h4>
-                <div id="modal-revenue-months" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50">
-                </div>
+                <div id="modal-revenue-months" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50"></div>
             </div>
         </div>
     </div>
@@ -162,6 +160,27 @@
             <div>
                 <h4 class="text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">Pending Additional Sites</h4>
                 <div id="modal-pending-sites" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" class="fixed inset-0 modal-overlay z-[100] view-hidden flex items-center justify-center p-4">
+        <div class="glass-card bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
+            <div id="custom-alert-icon" class="mx-auto w-12 h-12 mb-4 rounded-full flex items-center justify-center text-xl font-bold"></div>
+            <h3 id="custom-alert-title" class="text-xl font-bold text-white mb-2"></h3>
+            <p id="custom-alert-message" class="text-sm text-slate-400 mb-6"></p>
+            <button onclick="closeCustomAlert()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-all">OK</button>
+        </div>
+    </div>
+
+    <div id="custom-confirm-modal" class="fixed inset-0 modal-overlay z-[100] view-hidden flex items-center justify-center p-4">
+        <div class="glass-card bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
+            <div class="mx-auto w-12 h-12 mb-4 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-xl font-bold">?</div>
+            <h3 class="text-xl font-bold text-white mb-2">Confirmation Required</h3>
+            <p id="custom-confirm-message" class="text-sm text-slate-400 mb-6"></p>
+            <div class="flex gap-3">
+                <button onclick="closeCustomConfirm()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-all border border-slate-700">Cancel</button>
+                <button id="custom-confirm-btn" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition-all">Confirm</button>
             </div>
         </div>
     </div>
@@ -187,6 +206,52 @@
         window.cachedUsers = {}; 
         window.revenueStats = { tiers: {}, months: {}, total: 0 }; 
 
+        // --- CUSTOM MODAL LOGIC ---
+        window.showCustomAlert = function(title, message, type = 'error') {
+            const modal = document.getElementById('custom-alert-modal');
+            const titleEl = document.getElementById('custom-alert-title');
+            const msgEl = document.getElementById('custom-alert-message');
+            const iconEl = document.getElementById('custom-alert-icon');
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+
+            if (type === 'success') {
+                iconEl.className = 'mx-auto w-12 h-12 mb-4 rounded-full flex items-center justify-center text-xl font-bold bg-emerald-500/20 text-emerald-500';
+                iconEl.innerHTML = '✓';
+            } else {
+                iconEl.className = 'mx-auto w-12 h-12 mb-4 rounded-full flex items-center justify-center text-xl font-bold bg-rose-500/20 text-rose-500';
+                iconEl.innerHTML = '!';
+            }
+            modal.classList.remove('view-hidden');
+        };
+
+        window.closeCustomAlert = function() {
+            document.getElementById('custom-alert-modal').classList.add('view-hidden');
+        };
+
+        window.showCustomConfirm = function(message, onConfirmCallback) {
+            const modal = document.getElementById('custom-confirm-modal');
+            document.getElementById('custom-confirm-message').innerText = message;
+            
+            const confirmBtn = document.getElementById('custom-confirm-btn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.addEventListener('click', () => {
+                closeCustomConfirm();
+                onConfirmCallback();
+            });
+
+            modal.classList.remove('view-hidden');
+        };
+
+        window.closeCustomConfirm = function() {
+            document.getElementById('custom-confirm-modal').classList.add('view-hidden');
+        };
+        // --------------------------
+
+
         window.handleLogin = function() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
@@ -195,7 +260,7 @@
                 document.getElementById('dashboard-view').classList.remove('view-hidden');
                 startLiveSync();
             } else {
-                alert('Access Denied');
+                showCustomAlert('Access Denied', 'Invalid credentials provided.', 'error');
             }
         };
 
@@ -226,7 +291,9 @@
             const sitesGranted = parseInt(sitesInput.value) || 1;
             const maxUses = parseInt(usesInput.value) || null; 
 
-            if (!code || !days) return alert('Please provide a valid code and number of days.');
+            if (!code || !days) {
+                return showCustomAlert('Missing Info', 'Please provide a valid code and number of days.', 'error');
+            }
 
             try {
                 await setDoc(doc(db, "coupons", code), {
@@ -236,24 +303,24 @@
                     createdAt: Date.now(),
                     usedBy: []
                 });
-                alert(`Success! Coupon ${code} created for ${days} days and ${sitesGranted} site(s).`);
+                showCustomAlert('Success!', `Coupon ${code} created for ${days} days and ${sitesGranted} site(s).`, 'success');
                 codeInput.value = '';
                 daysInput.value = '';
                 sitesInput.value = '';
                 usesInput.value = '';
             } catch (e) {
-                alert('Error creating coupon: ' + e.message);
+                showCustomAlert('Error', 'Error creating coupon: ' + e.message, 'error');
             }
         };
 
-        window.deleteCoupon = async function(code) {
-            if (confirm(`Are you sure you want to delete promo code: ${code}?`)) {
+        window.deleteCoupon = function(code) {
+            showCustomConfirm(`Are you sure you want to delete promo code: ${code}?`, async () => {
                 try {
                     await deleteDoc(doc(db, "coupons", code));
                 } catch (e) {
-                    alert("Error: " + e.message);
+                    showCustomAlert('Error', "Error deleting coupon: " + e.message, 'error');
                 }
-            }
+            });
         };
 
         function startLiveSync() {
@@ -478,7 +545,7 @@
 
         window.closeModal = function() { document.getElementById('sites-modal').classList.add('view-hidden'); };
 
-        window.approvePendingSite = async function(userId, index) {
+        window.approvePendingSite = function(userId, index) {
             const user = window.cachedUsers[userId];
             if (!user) return;
             const siteToApprove = user.pendingSites[index];
@@ -487,7 +554,7 @@
             const actualTimeout = siteToApprove.timeout || 5;
             const actualUnit = siteToApprove.unit || 'm';
 
-            if (confirm(`Approve payment and secure ${actualUrl}?`)) {
+            showCustomConfirm(`Approve payment and secure ${actualUrl}?`, async () => {
                 const ref = doc(db, "users", userId);
                 try {
                     const userDoc = await getDoc(ref);
@@ -520,8 +587,10 @@
                         upgradePending: false 
                     });
                     closeModal(); 
-                } catch (e) { alert("Error approving site: " + e.message); }
-            }
+                } catch (e) { 
+                    showCustomAlert('Error', 'Error approving site: ' + e.message, 'error'); 
+                }
+            });
         };
 
         window.approveWithDays = async (id) => {
@@ -555,14 +624,18 @@
 
                 await updateDoc(ref, updateData); 
             } catch (e) { 
-                alert("Error: " + e.message); 
+                showCustomAlert('Error', "Error updating status: " + e.message, 'error'); 
             }
         };
 
-        window.removeUser = async (id) => {
-            if (confirm('Delete user?')) {
-                try { await deleteDoc(doc(db, "users", id)); } catch (e) { alert("Error: " + e.message); }
-            }
+        window.removeUser = function(id) {
+            showCustomConfirm('Are you sure you want to completely delete this user?', async () => {
+                try { 
+                    await deleteDoc(doc(db, "users", id)); 
+                } catch (e) { 
+                    showCustomAlert('Error', "Error deleting user: " + e.message, 'error'); 
+                }
+            });
         };
     </script>
 </body>
