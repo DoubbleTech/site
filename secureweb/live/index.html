@@ -63,16 +63,14 @@
                 </div>
 
                 <div class="glass-card p-6 rounded-3xl border border-indigo-500/30 md:col-span-1">
-                    <p class="text-indigo-400 text-xs font-bold uppercase mb-2">Generate Coupon</p>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex gap-2">
-                            <input type="text" id="newCouponCode" placeholder="Code (FREE7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white uppercase outline-none">
-                            <input type="number" id="newCouponDays" placeholder="Days" class="w-20 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="7">
-                            <input type="number" id="newCouponSites" placeholder="Sites" title="Number of sites to unlock" class="w-20 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="1">
-                        </div>
-                        <input type="number" id="newCouponUses" placeholder="Max Uses (Leave blank for all users)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none">
-                        <button onclick="generateCoupon()" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold py-2 rounded transition-all">CREATE PROMO</button>
+                    <p class="text-indigo-400 text-xs font-bold uppercase mb-3">Generate Coupon</p>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <input type="text" id="newCouponCode" placeholder="Code (e.g. FREE7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white uppercase outline-none col-span-2">
+                        <input type="number" id="newCouponDays" placeholder="Days (e.g. 7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none">
+                        <input type="number" id="newCouponSites" placeholder="Sites (e.g. 1)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none">
                     </div>
+                    <input type="number" id="newCouponUses" placeholder="Max Uses (Leave blank for all users)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none mb-2">
+                    <button onclick="generateCoupon()" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold py-2 rounded transition-all">CREATE PROMO</button>
                 </div>
             </div>
 
@@ -139,13 +137,13 @@
             <div class="mb-6">
                 <h4 class="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-3">By Subscription Tier</h4>
                 <div id="modal-revenue-tiers" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50">
-                    </div>
+                </div>
             </div>
 
             <div>
                 <h4 class="text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-3">By Recent Payment Month</h4>
                 <div id="modal-revenue-months" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50">
-                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -187,7 +185,7 @@
         let unsubscribeUsers = null;
         let unsubscribeCoupons = null;
         window.cachedUsers = {}; 
-        window.revenueStats = { tiers: {}, months: {}, total: 0 }; // Global stat tracker
+        window.revenueStats = { tiers: {}, months: {}, total: 0 }; 
 
         window.handleLogin = function() {
             const u = document.getElementById('username').value;
@@ -240,6 +238,8 @@
                 });
                 alert(`Success! Coupon ${code} created for ${days} days and ${sitesGranted} site(s).`);
                 codeInput.value = '';
+                daysInput.value = '';
+                sitesInput.value = '';
                 usesInput.value = '';
             } catch (e) {
                 alert('Error creating coupon: ' + e.message);
@@ -286,18 +286,15 @@
 
                         if (isActive) {
                             activeCount++;
-                            // Calculate Intelligence if it's a paid user
                             if (user.subscriptionType === 'paid') {
                                 const userRev = (maxSites * 299);
                                 totalRevenue += userRev;
                                 
-                                // Group by Tier
                                 const tierName = `${maxSites} Site${maxSites > 1 ? 's' : ''}`;
                                 if (!revByTier[tierName]) revByTier[tierName] = { count: 0, revenue: 0 };
                                 revByTier[tierName].count++;
                                 revByTier[tierName].revenue += userRev;
 
-                                // Group by Estimated Payment Month (Expiry - 30 days)
                                 if (user.expiryDate) {
                                     const paymentDate = new Date(user.expiryDate - (30 * 24 * 60 * 60 * 1000));
                                     const monthName = paymentDate.toLocaleString('default', { month: 'short', year: 'numeric' });
@@ -348,7 +345,6 @@
                     });
                 }
                 
-                // Update global stats
                 window.revenueStats = { tiers: revByTier, months: revByMonth, total: totalRevenue };
                 
                 document.getElementById('stat-active').innerText = activeCount;
@@ -387,7 +383,6 @@
             });
         }
 
-        // --- REVENUE MODAL LOGIC ---
         window.openRevenueModal = function() {
             const tiersDiv = document.getElementById('modal-revenue-tiers');
             const monthsDiv = document.getElementById('modal-revenue-months');
@@ -396,7 +391,6 @@
 
             const data = window.revenueStats;
 
-            // Render Subscription Tiers
             if (Object.keys(data.tiers).length === 0) {
                 tiersDiv.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No paid subscriptions detected.</div>';
             } else {
@@ -413,11 +407,9 @@
                 }
             }
 
-            // Render Payment Months
             if (Object.keys(data.months).length === 0) {
                 monthsDiv.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No payment history detected.</div>';
             } else {
-                // Sort months chronologically
                 const sortedMonths = Object.keys(data.months).sort((a, b) => new Date(b) - new Date(a));
                 for (const month of sortedMonths) {
                     monthsDiv.innerHTML += `
