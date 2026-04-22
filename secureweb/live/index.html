@@ -56,11 +56,13 @@
                     <p class="text-slate-400 text-xs font-bold uppercase mb-2">Total Revenue</p>
                     <span id="stat-revenue" class="text-4xl font-bold text-white">0</span> <small class="text-slate-500">PKR</small>
                 </div>
-                <div class="glass-card p-6 rounded-3xl">
-                    <p class="text-slate-400 text-xs font-bold uppercase mb-2">System Status</p>
-                    <span class="text-emerald-400 font-bold flex items-center gap-2">
-                        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> ONLINE
-                    </span>
+                <div class="glass-card p-6 rounded-3xl border border-indigo-500/30">
+                    <p class="text-indigo-400 text-xs font-bold uppercase mb-2">Generate Coupon</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="newCouponCode" placeholder="Code (e.g. FREE7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white uppercase outline-none">
+                        <input type="number" id="newCouponDays" placeholder="Days" class="w-16 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="7">
+                    </div>
+                    <button onclick="generateCoupon()" class="w-full mt-2 bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold py-2 rounded transition-all">CREATE PROMO</button>
                 </div>
             </div>
 
@@ -79,10 +81,10 @@
                         <thead class="bg-slate-800/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
                             <tr>
                                 <th class="p-6">User Contact</th>
-                                <th class="p-6">Machine ID / Resets</th>
                                 <th class="p-6">Sites</th>
                                 <th class="p-6">Subscription Info</th>
                                 <th class="p-6">Status</th>
+                                <th class="p-6">Approval Days</th>
                                 <th class="p-6 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -114,7 +116,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc, arrayRemove, increment, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBSKtg7y1C3bLGyojiI-6hCdU-UOCYrMYY",
@@ -157,6 +159,28 @@
                 const text = row.innerText.toLowerCase();
                 row.style.display = text.includes(filter) ? "" : "none";
             });
+        };
+
+        // NEW: Generate Promo Code
+        window.generateCoupon = async function() {
+            const codeInput = document.getElementById('newCouponCode');
+            const daysInput = document.getElementById('newCouponDays');
+            const code = codeInput.value.trim().toUpperCase();
+            const days = parseInt(daysInput.value);
+
+            if (!code || !days) return alert('Please provide a valid code and number of days.');
+
+            try {
+                await setDoc(doc(db, "coupons", code), {
+                    days: days,
+                    createdAt: Date.now(),
+                    usedBy: []
+                });
+                alert(`Success! Coupon ${code} created for ${days} days.`);
+                codeInput.value = '';
+            } catch (e) {
+                alert('Error creating coupon: ' + e.message);
+            }
         };
 
         function startLiveSync() {
@@ -203,9 +227,6 @@
                                     <div class="text-xs text-slate-400">${user.email || 'No Email'}</div>
                                 </td>
                                 <td class="p-6">
-                                    <div class="text-[10px] text-slate-300 font-mono bg-slate-800 px-2 py-1 rounded inline-block">ID: ${user.machineId || 'N/A'}</div>
-                                </td>
-                                <td class="p-6">
                                     <button onclick="openSitesModal('${id}')" class="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
                                         <span>${configuredSites.length}/${maxSites} Active</span>
                                         ${pendingSites.length > 0 ? `<span class="bg-amber-500 text-amber-950 px-1.5 py-0.5 rounded-full text-[9px]">${pendingSites.length} Pend</span>` : ''}
@@ -219,8 +240,11 @@
                                         ${isExpired ? 'EXPIRED' : user.status}
                                     </span>
                                 </td>
+                                <td class="p-6">
+                                    <input type="number" id="days-${id}" value="30" class="w-16 p-1 bg-slate-900 border border-slate-700 rounded text-xs text-center outline-none text-white">
+                                </td>
                                 <td class="p-6 text-right space-x-2">
-                                    <button onclick="updateStatus('${id}', 'Activated')" class="text-emerald-400 font-bold text-xs hover:underline">APPROVE</button>
+                                    <button onclick="approveWithDays('${id}')" class="text-emerald-400 font-bold text-xs hover:underline">APPROVE</button>
                                     <button onclick="updateStatus('${id}', 'Pending')" class="text-amber-400 font-bold text-xs hover:underline">REVOKE</button>
                                     <button onclick="removeUser('${id}')" class="text-rose-500/40 hover:text-rose-500 text-xs ml-2">DEL</button>
                                 </td>
@@ -297,7 +321,6 @@
             const siteToApprove = user.pendingSites[index];
             const actualUrl = typeof siteToApprove === 'string' ? siteToApprove : siteToApprove.url;
             const actualAlias = typeof siteToApprove === 'string' ? 'Hidden Site' : siteToApprove.alias;
-            // FIXED: Now we pull the timeout and unit correctly during approval
             const actualTimeout = siteToApprove.timeout || 5;
             const actualUnit = siteToApprove.unit || 'm';
 
@@ -332,12 +355,19 @@
             }
         };
 
-        window.updateStatus = async (id, newStatus) => {
+        // NEW: Approve utilizing the custom days input
+        window.approveWithDays = async (id) => {
+            const daysInput = document.getElementById(`days-${id}`).value;
+            const days = parseInt(daysInput) || 30;
+            await updateStatus(id, 'Activated', days);
+        };
+
+        window.updateStatus = async (id, newStatus, days = 30) => {
             const ref = doc(db, "users", id);
             let updateData = { status: newStatus };
             if (newStatus === 'Activated') {
                 const expiry = new Date();
-                expiry.setDate(expiry.getDate() + 30);
+                expiry.setDate(expiry.getDate() + days);
                 updateData.expiryDate = expiry.getTime();
                 updateData.maxSites = increment(0); 
             }
