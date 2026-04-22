@@ -52,11 +52,21 @@
                     <p class="text-slate-400 text-xs font-bold uppercase mb-2">Pending Approvals</p>
                     <span id="stat-pending" class="text-4xl font-bold text-amber-400">0</span>
                 </div>
-                <div class="glass-card p-6 rounded-3xl border border-indigo-500/30 md:col-span-2">
+                
+                <div class="glass-card p-6 rounded-3xl border border-emerald-500/20 cursor-pointer hover:bg-slate-800/50 transition-all relative overflow-hidden group" onclick="openRevenueModal()">
+                    <div class="absolute top-4 right-4 text-emerald-500/30 group-hover:text-emerald-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                    </div>
+                    <p class="text-emerald-400 text-xs font-bold uppercase mb-2">Live Revenue (MRR)</p>
+                    <span id="stat-revenue" class="text-4xl font-bold text-white">0</span> <small class="text-slate-500">PKR</small>
+                    <p class="text-[9px] text-slate-500 mt-1 uppercase tracking-wider">Click for breakdown</p>
+                </div>
+
+                <div class="glass-card p-6 rounded-3xl border border-indigo-500/30 md:col-span-1">
                     <p class="text-indigo-400 text-xs font-bold uppercase mb-2">Generate Coupon</p>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
-                            <input type="text" id="newCouponCode" placeholder="Code (e.g. FREE7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white uppercase outline-none">
+                            <input type="text" id="newCouponCode" placeholder="Code (FREE7)" class="w-full p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white uppercase outline-none">
                             <input type="number" id="newCouponDays" placeholder="Days" class="w-20 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="7">
                             <input type="number" id="newCouponSites" placeholder="Sites" title="Number of sites to unlock" class="w-20 p-2 bg-slate-900 rounded border border-slate-700 text-xs text-white outline-none" value="1">
                         </div>
@@ -120,6 +130,26 @@
         </div>
     </div>
 
+    <div id="revenue-modal" class="fixed inset-0 modal-overlay z-50 view-hidden flex items-center justify-center p-4">
+        <div class="glass-card bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+            <button onclick="closeRevenueModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">X</button>
+            <h3 class="text-xl font-bold text-white mb-2">Revenue Analytics</h3>
+            <p class="text-xs text-slate-400 mb-6">Real-time breakdown of your Monthly Recurring Revenue (MRR).</p>
+
+            <div class="mb-6">
+                <h4 class="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-3">By Subscription Tier</h4>
+                <div id="modal-revenue-tiers" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50">
+                    </div>
+            </div>
+
+            <div>
+                <h4 class="text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-3">By Recent Payment Month</h4>
+                <div id="modal-revenue-months" class="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden divide-y divide-slate-700/50">
+                    </div>
+            </div>
+        </div>
+    </div>
+
     <div id="sites-modal" class="fixed inset-0 modal-overlay z-50 view-hidden flex items-center justify-center p-4">
         <div class="glass-card bg-slate-900 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">X</button>
@@ -157,6 +187,7 @@
         let unsubscribeUsers = null;
         let unsubscribeCoupons = null;
         window.cachedUsers = {}; 
+        window.revenueStats = { tiers: {}, months: {}, total: 0 }; // Global stat tracker
 
         window.handleLogin = function() {
             const u = document.getElementById('username').value;
@@ -236,6 +267,8 @@
                 window.cachedUsers = {}; 
                 
                 let activeCount = 0, pendingCount = 0, totalRevenue = 0;
+                let revByTier = {};
+                let revByMonth = {};
 
                 if (snapshot.empty) {
                     noData.classList.remove('view-hidden');
@@ -253,8 +286,24 @@
 
                         if (isActive) {
                             activeCount++;
+                            // Calculate Intelligence if it's a paid user
                             if (user.subscriptionType === 'paid') {
-                                totalRevenue += (maxSites * 299); 
+                                const userRev = (maxSites * 299);
+                                totalRevenue += userRev;
+                                
+                                // Group by Tier
+                                const tierName = `${maxSites} Site${maxSites > 1 ? 's' : ''}`;
+                                if (!revByTier[tierName]) revByTier[tierName] = { count: 0, revenue: 0 };
+                                revByTier[tierName].count++;
+                                revByTier[tierName].revenue += userRev;
+
+                                // Group by Estimated Payment Month (Expiry - 30 days)
+                                if (user.expiryDate) {
+                                    const paymentDate = new Date(user.expiryDate - (30 * 24 * 60 * 60 * 1000));
+                                    const monthName = paymentDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+                                    if (!revByMonth[monthName]) revByMonth[monthName] = 0;
+                                    revByMonth[monthName] += userRev;
+                                }
                             }
                         } else {
                             pendingCount++;
@@ -298,6 +347,10 @@
                         `;
                     });
                 }
+                
+                // Update global stats
+                window.revenueStats = { tiers: revByTier, months: revByMonth, total: totalRevenue };
+                
                 document.getElementById('stat-active').innerText = activeCount;
                 document.getElementById('stat-pending').innerText = pendingCount;
                 document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString();
@@ -333,6 +386,55 @@
                 }
             });
         }
+
+        // --- REVENUE MODAL LOGIC ---
+        window.openRevenueModal = function() {
+            const tiersDiv = document.getElementById('modal-revenue-tiers');
+            const monthsDiv = document.getElementById('modal-revenue-months');
+            tiersDiv.innerHTML = '';
+            monthsDiv.innerHTML = '';
+
+            const data = window.revenueStats;
+
+            // Render Subscription Tiers
+            if (Object.keys(data.tiers).length === 0) {
+                tiersDiv.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No paid subscriptions detected.</div>';
+            } else {
+                for (const [tier, info] of Object.entries(data.tiers)) {
+                    tiersDiv.innerHTML += `
+                        <div class="p-3 flex justify-between items-center hover:bg-slate-800/30 transition-colors">
+                            <div class="text-sm text-slate-300 flex items-center gap-2">
+                                <span class="font-bold">${tier}</span>
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${info.count} user(s)</span>
+                            </div>
+                            <div class="text-emerald-400 font-mono text-sm font-bold">${info.revenue.toLocaleString()} PKR</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Render Payment Months
+            if (Object.keys(data.months).length === 0) {
+                monthsDiv.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No payment history detected.</div>';
+            } else {
+                // Sort months chronologically
+                const sortedMonths = Object.keys(data.months).sort((a, b) => new Date(b) - new Date(a));
+                for (const month of sortedMonths) {
+                    monthsDiv.innerHTML += `
+                        <div class="p-3 flex justify-between items-center hover:bg-slate-800/30 transition-colors">
+                            <div class="text-sm text-slate-300">${month}</div>
+                            <div class="text-indigo-400 font-mono text-sm font-bold">${data.months[month].toLocaleString()} PKR</div>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('revenue-modal').classList.remove('view-hidden');
+        };
+
+        window.closeRevenueModal = function() {
+            document.getElementById('revenue-modal').classList.add('view-hidden');
+        };
 
         window.openSitesModal = function(id) {
             const user = window.cachedUsers[id];
@@ -401,20 +503,28 @@
                     const currentPending = data.pendingSites || [];
                     currentPending.splice(index, 1);
                     
-                    const newConfigured = data.configuredSites || [];
+                    let newConfigured = data.configuredSites || [];
+                    let newAllowed = data.allowedOrigins || [];
+                    let newMaxSites = (data.maxSites || 1) + 1;
+
+                    if (data.subscriptionType === 'promo') {
+                        newConfigured = [];
+                        newAllowed = [];
+                        newMaxSites = 1;
+                    }
+
                     if (!newConfigured.some(s => s.url === actualUrl)) {
                         newConfigured.push({ url: actualUrl, alias: actualAlias, timeout: actualTimeout, unit: actualUnit });
                     }
                     
-                    const newAllowed = data.allowedOrigins || [];
                     if (!newAllowed.includes(actualUrl)) newAllowed.push(actualUrl);
 
                     await updateDoc(ref, {
                         pendingSites: currentPending,
                         configuredSites: newConfigured,
                         allowedOrigins: newAllowed,
-                        maxSites: increment(1),
-                        subscriptionType: 'paid', // Upgraded via site add
+                        maxSites: newMaxSites,
+                        subscriptionType: 'paid', 
                         upgradePending: false 
                     });
                     closeModal(); 
@@ -430,14 +540,31 @@
 
         window.updateStatus = async (id, newStatus, days = 30) => {
             const ref = doc(db, "users", id);
-            let updateData = { status: newStatus, subscriptionType: 'paid', upgradePending: false };
-            if (newStatus === 'Activated') {
-                const expiry = new Date();
-                expiry.setDate(expiry.getDate() + days);
-                updateData.expiryDate = expiry.getTime();
-                updateData.maxSites = increment(0); 
+            try {
+                const userDoc = await getDoc(ref);
+                if (!userDoc.exists()) return;
+                const data = userDoc.data();
+
+                let updateData = { status: newStatus, subscriptionType: 'paid', upgradePending: false };
+
+                if (newStatus === 'Activated') {
+                    const expiry = new Date();
+                    expiry.setDate(expiry.getDate() + days);
+                    updateData.expiryDate = expiry.getTime();
+                    
+                    if (data.subscriptionType === 'promo') {
+                        updateData.configuredSites = [];
+                        updateData.allowedOrigins = [];
+                        updateData.maxSites = 1; 
+                    } else {
+                        updateData.maxSites = data.maxSites || 1; 
+                    }
+                }
+
+                await updateDoc(ref, updateData); 
+            } catch (e) { 
+                alert("Error: " + e.message); 
             }
-            try { await updateDoc(ref, updateData); } catch (e) { alert("Error: " + e.message); }
         };
 
         window.removeUser = async (id) => {
