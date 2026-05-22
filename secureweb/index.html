@@ -16,9 +16,14 @@
         .browser-card:hover { background: rgba(16, 185, 129, 0.05); border-color: #10b981; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal.active { display: flex; }
+        
+        /* Custom scrollbar for policy modal */
+        .policy-scroll::-webkit-scrollbar { width: 6px; }
+        .policy-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .policy-scroll::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.5); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="flex flex-col min-h-screen">
     <nav class="fixed w-full z-50 nav-blur border-b border-white/5">
         <div class="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -32,38 +37,54 @@
         </div>
     </nav>
 
-    <section class="pt-56 pb-32 px-6 text-center">
-        <h1 class="text-6xl md:text-8xl font-bold mb-8 tracking-tighter leading-[0.9]">Stealth Browsing.<br><span class="text-white/40">Instant Erasure.</span></h1>
-        <p class="text-white/50 text-lg md:text-xl mb-12 max-w-2xl mx-auto">The most advanced privacy tool for modern browsers. Developed by DoubbleTech.com</p>
-        <a href="#download" class="cta-button px-14 py-5 rounded-full font-bold text-black text-lg transition-transform hover:scale-105 inline-block">Download Now</a>
-    </section>
+    <main class="flex-grow">
+        <section class="pt-56 pb-32 px-6 text-center">
+            <h1 class="text-6xl md:text-8xl font-bold mb-8 tracking-tighter leading-[0.9]">Stealth Browsing.<br><span class="text-white/40">Instant Erasure.</span></h1>
+            <p class="text-white/50 text-lg md:text-xl mb-12 max-w-2xl mx-auto">The most advanced privacy tool for modern browsers. Developed by DoubbleTech.com</p>
+            <a href="#download" class="cta-button px-14 py-5 rounded-full font-bold text-black text-lg transition-transform hover:scale-105 inline-block">Download Now</a>
+        </section>
 
-    <section id="download" class="py-20 px-6">
-        <div class="max-w-4xl mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-12">Select Your Browser</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="browser-card p-8 rounded-[32px] text-center">
-                    <img src="https://cdn-icons-png.flaticon.com/512/732/732204.png" class="w-16 h-16 mx-auto mb-6" alt="Chrome">
-                    <h3 class="text-xl font-bold mb-4">Google Chrome</h3>
-                    <button onclick="startDownload()" class="bg-emerald-500 text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-emerald-400">Get Extension</button>
-                </div>
-                <div class="browser-card p-8 rounded-[32px] text-center opacity-40">
-                    <img src="https://cdn-icons-png.flaticon.com/512/732/732230.png" class="w-16 h-16 mx-auto mb-6 grayscale" alt="Opera">
-                    <h3 class="text-xl font-bold mb-4">Opera</h3>
-                    <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">Coming Soon</p>
-                </div>
-                <div class="browser-card p-8 rounded-[32px] text-center opacity-40">
-                    <img src="https://cdn-icons-png.flaticon.com/512/732/732212.png" class="w-16 h-16 mx-auto mb-6 grayscale" alt="Firefox">
-                    <h3 class="text-xl font-bold mb-4">Firefox</h3>
-                    <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">Coming Soon</p>
+        <section id="download" class="py-20 px-6">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">Select Your Browser</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="browser-card p-8 rounded-[32px] text-center">
+                        <img src="https://cdn-icons-png.flaticon.com/512/732/732204.png" class="w-16 h-16 mx-auto mb-6" alt="Chrome">
+                        <h3 class="text-xl font-bold mb-4">Google Chrome</h3>
+                        <button onclick="startDownload()" class="bg-emerald-500 text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-emerald-400">Get Extension</button>
+                    </div>
+                    <div class="browser-card p-8 rounded-[32px] text-center opacity-40">
+                        <img src="https://cdn-icons-png.flaticon.com/512/732/732230.png" class="w-16 h-16 mx-auto mb-6 grayscale" alt="Opera">
+                        <h3 class="text-xl font-bold mb-4">Opera</h3>
+                        <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">Coming Soon</p>
+                    </div>
+                    <div class="browser-card p-8 rounded-[32px] text-center opacity-40">
+                        <img src="https://cdn-icons-png.flaticon.com/512/732/732212.png" class="w-16 h-16 mx-auto mb-6 grayscale" alt="Firefox">
+                        <h3 class="text-xl font-bold mb-4">Firefox</h3>
+                        <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">Coming Soon</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
+    <!-- Footer with SafePay Required Links -->
+    <footer class="border-t border-white/5 py-10 px-6 mt-12 bg-black/50">
+        <div class="max-w-4xl mx-auto flex flex-col items-center gap-6">
+            <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-medium text-white/50">
+                <button onclick="openPolicy('privacy')" class="hover:text-emerald-400 transition-colors">Privacy Policy</button>
+                <button onclick="openPolicy('terms')" class="hover:text-emerald-400 transition-colors">Terms and Conditions</button>
+                <button onclick="openPolicy('refund')" class="hover:text-emerald-400 transition-colors">Cancellation/Refund Policy</button>
+                <button onclick="openPolicy('ownership')" class="hover:text-emerald-400 transition-colors">Ownership Statement</button>
+            </div>
+            <p class="text-xs text-white/30">© 2026 Doubble Tech. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Installation Modal -->
     <div id="instructionModal" class="modal">
         <div class="bg-[#0f172a] p-8 md:p-12 rounded-[40px] border border-white/10 max-w-2xl w-full relative">
-            <button onclick="closeModal()" class="absolute top-6 right-8 text-white/40 hover:text-white">✕ Close</button>
+            <button onclick="closeModal('instructionModal')" class="absolute top-6 right-8 text-white/40 hover:text-white transition-colors">✕ Close</button>
             <h2 class="text-3xl font-bold mb-6 text-emerald-400">Installation Guide</h2>
             <div class="space-y-6 text-white/70">
                 <div class="flex gap-4">
@@ -86,15 +107,91 @@
         </div>
     </div>
 
+    <!-- Dynamic Policy Modal -->
+    <div id="policyModal" class="modal">
+        <div class="bg-[#0f172a] p-8 md:p-12 rounded-[40px] border border-white/10 max-w-3xl w-full relative flex flex-col max-h-[85vh]">
+            <button onclick="closeModal('policyModal')" class="absolute top-6 right-8 text-white/40 hover:text-white z-10 transition-colors">✕ Close</button>
+            <h2 id="policyTitle" class="text-3xl font-bold mb-6 text-emerald-400 pr-12 shrink-0">Title</h2>
+            <div id="policyContent" class="space-y-5 text-white/70 text-sm md:text-base leading-relaxed policy-scroll overflow-y-auto pr-4 pb-4">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Store all policy data in a single object
+        const policyData = {
+            privacy: {
+                title: "Privacy Policy",
+                content: `
+                    <p>I am committed to protecting your privacy while you use the Secure Web extension. This policy outlines how your data is handled.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Data Collection & Usage</h3>
+                    <p>I only collect the absolute minimum information required to facilitate your transaction and activate your license. Specifically, I collect the phone number provided during the payment process (PKR 299) to verify your transaction and issue your stealth license.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Browsing Data</h3>
+                    <p>I do not track, store, or transmit your browsing history, keystrokes, or personal data to any external servers. All stealth browsing capabilities and data erasure functions operate entirely locally on your device.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Data Sharing</h3>
+                    <p>I do not sell, rent, or share your contact or payment information with any third parties under any circumstances, except as securely processed by our payment gateway (SafePay).</p>
+                `
+            },
+            terms: {
+                title: "Terms and Conditions",
+                content: `
+                    <p>By downloading, installing, and activating the Secure Web extension, you agree to abide by these Terms and Conditions.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">License and Usage</h3>
+                    <p>Upon payment of PKR 299, I grant you a personal, non-exclusive, non-transferable license to use the Secure Web extension. You agree to use this tool for lawful purposes only.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Disclaimer of Warranties</h3>
+                    <p>I provide this extension "as is" and without any warranty or condition, express, implied, or statutory. I specifically disclaim any implied warranties of merchantability or fitness for a particular purpose.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Governing Law</h3>
+                    <p>These terms and your use of the extension are governed by and construed in accordance with the laws of Sindh, Pakistan, without regard to its conflict of law principles.</p>
+                `
+            },
+            refund: {
+                title: "Cancellation & Refund Policy",
+                content: `
+                    <p>I want you to be satisfied with your purchase of the Secure Web extension.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Refund Eligibility</h3>
+                    <p>Because Secure Web is a downloadable digital good, all sales are generally final once the activation license is utilized. However, if you experience technical issues that prevent the extension from functioning on a supported browser, please contact me within 7 days of your purchase.</p>
+                    <p>If I cannot resolve the technical issue, I will issue a full refund to your original payment method.</p>
+                    <h3 class="text-white font-bold mt-4 mb-2">Cancellations</h3>
+                    <p>If you have made a payment but have not yet activated the extension with your phone number, you may request a cancellation and full refund by contacting my support team.</p>
+                `
+            },
+            ownership: {
+                title: "Ownership Statement",
+                content: `
+                    <p>The Secure Web Chrome extension, including its design, architecture, branding, and underlying code, is the sole intellectual property of Doubble Tech.</p>
+                    <p>I independently developed and exclusively own all assets associated with this product.</p>
+                    <p>Unauthorized redistribution, modification, reverse engineering, or resale of this extension or any of its components is strictly prohibited and constitutes a violation of my intellectual property rights.</p>
+                `
+            }
+        };
+
         function startDownload() {
-            // Trigger the actual file download
             window.location.href = 'Ghost_Extension.crx';
-            // Show instructions
             document.getElementById('instructionModal').classList.add('active');
         }
-        function closeModal() {
-            document.getElementById('instructionModal').classList.remove('active');
+
+        function openPolicy(type) {
+            const data = policyData[type];
+            document.getElementById('policyTitle').innerHTML = data.title;
+            document.getElementById('policyContent').innerHTML = data.content;
+            document.getElementById('policyModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Close modal when clicking outside the content box
+        window.onclick = function(event) {
+            const instructionModal = document.getElementById('instructionModal');
+            const policyModal = document.getElementById('policyModal');
+            if (event.target == instructionModal) {
+                instructionModal.classList.remove('active');
+            }
+            if (event.target == policyModal) {
+                policyModal.classList.remove('active');
+            }
         }
     </script>
 </body>
