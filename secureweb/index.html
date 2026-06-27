@@ -44,6 +44,54 @@
             <a href="#download" class="cta-button px-14 py-5 rounded-full font-bold text-black text-lg transition-transform hover:scale-105 inline-block">Download Now</a>
         </section>
 
+        <section id="features" class="py-20 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-4">Unmatched Stealth Abilities</h2>
+                    <p class="text-white/50 text-lg">Everything you need to browse without a trace.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="bento-card p-8">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">👻</div>
+                        <h3 class="text-xl font-bold mb-3">Ghost-Mode Auto Nuke</h3>
+                        <p class="text-white/60 text-sm leading-relaxed">Close a secure tab and instantly eradicate its history, cache, cookies, local storage, and IndexedDB. Zero traces left behind.</p>
+                    </div>
+
+                    <div class="bento-card p-8">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">🚨</div>
+                        <h3 class="text-xl font-bold mb-3">Panic "Boss Key"</h3>
+                        <p class="text-white/60 text-sm leading-relaxed">Hit <kbd class="bg-black/50 border border-white/10 px-2 py-1 rounded text-xs text-emerald-400 font-mono">Alt+X</kbd> (or <kbd class="bg-black/50 border border-white/10 px-2 py-1 rounded text-xs text-emerald-400 font-mono">Cmd+Shift+X</kbd>) to instantly vaporize all your active Secure Web tabs at once.</p>
+                    </div>
+
+                    <div class="bento-card p-8">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">⏱️</div>
+                        <h3 class="text-xl font-bold mb-3">Auto-Timeout Limits</h3>
+                        <p class="text-white/60 text-sm leading-relaxed">Set custom time limits in minutes or seconds for specific domains. When the timer hits zero, the tab automatically self-destructs.</p>
+                    </div>
+
+                    <div class="bento-card p-8">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">⌨️</div>
+                        <h3 class="text-xl font-bold mb-3">Quick Shortcuts</h3>
+                        <p class="text-white/60 text-sm leading-relaxed">Instantly mute your current active tab with <kbd class="bg-black/50 border border-white/10 px-2 py-1 rounded text-xs text-emerald-400 font-mono">Alt+M</kbd> or close it silently with <kbd class="bg-black/50 border border-white/10 px-2 py-1 rounded text-xs text-emerald-400 font-mono">Alt+C</kbd>.</p>
+                    </div>
+
+                    <div class="bento-card p-8">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">🎭</div>
+                        <h3 class="text-xl font-bold mb-3">Secret Aliases</h3>
+                        <p class="text-white/60 text-sm leading-relaxed">Mask your secure sites behind custom alias names in your dashboard, ensuring even shoulder-surfers can't see what domains you've saved.</p>
+                    </div>
+
+                    <div class="bento-card p-8">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">☁️</div>
+                        <h3 class="text-xl font-bold mb-3">Cloud Synchronized</h3>
+                        <p class="text-white/60 text-sm leading-relaxed">Your secure site lists and pending timeout configurations are synced securely to the cloud, allowing easy session management.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
         <section id="download" class="py-20 px-6">
             <div class="max-w-4xl mx-auto">
                 <h2 class="text-3xl font-bold text-center mb-12">Select Your Browser</h2>
@@ -68,7 +116,6 @@
         </section>
     </main>
 
-    <!-- Footer with SafePay Required Links -->
     <footer class="border-t border-white/5 py-10 px-6 mt-12 bg-black/50">
         <div class="max-w-4xl mx-auto flex flex-col items-center gap-6">
             <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-medium text-white/50">
@@ -81,7 +128,6 @@
         </div>
     </footer>
 
-    <!-- Installation Modal -->
     <div id="instructionModal" class="modal">
         <div class="bg-[#0f172a] p-8 md:p-12 rounded-[40px] border border-white/10 max-w-2xl w-full relative">
             <button onclick="closeModal('instructionModal')" class="absolute top-6 right-8 text-white/40 hover:text-white transition-colors">✕ Close</button>
@@ -107,14 +153,12 @@
         </div>
     </div>
 
-    <!-- Dynamic Policy Modal -->
     <div id="policyModal" class="modal">
         <div class="bg-[#0f172a] p-8 md:p-12 rounded-[40px] border border-white/10 max-w-3xl w-full relative flex flex-col max-h-[85vh]">
             <button onclick="closeModal('policyModal')" class="absolute top-6 right-8 text-white/40 hover:text-white z-10 transition-colors">✕ Close</button>
             <h2 id="policyTitle" class="text-3xl font-bold mb-6 text-emerald-400 pr-12 shrink-0">Title</h2>
             <div id="policyContent" class="space-y-5 text-white/70 text-sm md:text-base leading-relaxed policy-scroll overflow-y-auto pr-4 pb-4">
-                <!-- Content injected via JS -->
-            </div>
+                </div>
         </div>
     </div>
 
